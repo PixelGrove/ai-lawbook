@@ -15,10 +15,11 @@
 #
 # 왜 상한인가: 하네스는 additionalContext 가 1만 자를 넘으면 파일로 빼고 앞 2,000자 미리보기만
 # 남긴다(모델에게 그 파일을 읽으라고 하지도 않는다). 그러면 맨 뒤의 장부가 보이지 않는다. 그래서
-# 장부 요약을 법보다 앞에 두고, 남은 예산을 법 개수로 나눈 몫을 넘는 법은 축약본(머리 블록·조문
-# 목차·체크리스트·전문 경로)으로 넣는다. 문자 수는 하네스처럼 UTF-16 단위로 센다(이모지 2, 한글 1).
+# 장부 요약을 법보다 앞에 두고, 남은 예산을 법마다 나눈다. 짧은 법은 전문으로 넣고 남은 몫을 긴 법에 다시
+# 나누며, 그래도 넘치는 법은 축약본(머리 블록·몫이 남는 만큼의 조문 본문·조문 목차·체크리스트·전문 경로)으로
+# 넣는다. 문자 수는 하네스처럼 UTF-16 단위로 센다(이모지 2, 한글 1).
 #
-#   ~/.claude/ai-lawbook/enabled-laws   한 줄에 법 이름 하나, # 뒤는 주석
+#   ~/.claude/ai-lawbook/enabled-laws   한 줄에 법 이름 하나(쉼표·공백으로 여러 개도 됨), # 뒤는 주석
 #   ~/.claude/ai-lawbook/confessions.md 반성문 장부 (항목이 있으면 항상 요약 주입)
 #
 # 법 파일 조회 순서: ~/.claude/skills → 플러그인 내장. 프로젝트 .claude/skills 는 보지 않는다.
@@ -87,9 +88,11 @@ u8() {
 }
 
 # ── 장부 해석 ────────────────────────────────────────────────────────────────
-# ledger_awk sum <상한> | top — 항목(## [ 로 시작)마다 제목·재범·시정·기계 규칙 줄을 모아 재범 횟수
+# ledger_awk sum <상한> | top | count — 항목(## [ 로 시작)마다 제목·재범·시정·기계 규칙 줄을 모아 재범 횟수
 # 내림차순(같으면 파일 순서)으로 정렬한다. sum: 첫 줄 F/C(생략 여부) 뒤에 상한 안의 장부 블록.
-# top: 최다 전과 상기문 한 줄. 문구는 환경변수 LB_*·UP_* 로 받는다(awk -v 는 역슬래시를 해석한다).
+# top: 최다 전과 상기문 한 줄(재범 횟수가 모두 0이면 내지 않는다). count: 항목 수. 코드 펜스 안의 예시
+# 항목은 세지 않으므로 상태 메시지의 건수가 실제 주입과 맞는다.
+# 문구는 환경변수 LB_*·UP_* 로 받는다(awk -v 는 역슬래시를 해석한다).
 # 항목이 수천 개여도 훅 타임아웃 안에 끝나도록 정렬은 O(n log n)이고, 요약 문자열은 예산이 찰
 # 때까지의 항목만 만든다.
 LEDGER_AWK='
@@ -116,7 +119,7 @@ function msort(   w, lo, mid, hi, i, j, k) {
       for (k = lo; k < hi; k++) O[k] = P[k]
     }
 }
-{ line = $0; sub(/\r$/, "", line) }
+{ line = $0; sub(/\r$/, "", line); if (NR == 1) sub(/^\357\273\277/, "", line) }
 line ~ /^[ \t]*```/ { fence = !fence; next }
 fence { next }
 line ~ /^## \[/ { flush(); ttl = line; next }
@@ -131,10 +134,13 @@ line ~ /^- (시정 및 재발 방지|Correction and prevention):/ { fix = line; 
 line ~ /^- (차단|Block|검사|Check):/ { if (length(rules) < 4000) rules = rules "\n" line }
 END {
   flush()
+  if (mode == "count") { print n + 0; exit }
   if (n == 0) exit
   if (mode == "top") {
     # 최다 전과 하나만 필요하므로 정렬하지 않는다(같은 횟수면 파일 순서가 앞선 항목).
+    # 재범 횟수가 없거나 0인 항목만 있으면 전과가 아니므로 턴마다 상기하지 않는다.
     b = 1; for (i = 2; i <= n; i++) if (C[i] > C[b]) b = i
+    if (C[b] < 1) exit
     t = T[b]; sub(/^## /, "", t)
     mid = ENVIRON["UP_MID"] C[b] ENVIRON["UP_POST"]
     room = 200 - u8len(ENVIRON["UP_PRE"]) - u8len(mid); if (room > 80) room = 80
@@ -166,14 +172,19 @@ END {
 ledger_awk() { u8awk "$LEDGER_AWK" -v mode="$1" -v cap="$2" < "$LEDGER"; }
 
 # ── 법 해석 ──────────────────────────────────────────────────────────────────
-# law_awk check <파일>          본문(프론트매터 제외)에 공백 아닌 글자가 있으면 exit 0.
+# law_awk len <파일>            본문(프론트매터 제외, 앞뒤 공백 제거)의 문자 수. 비었으면 0. 시행 여부 판정과
+#                               예산 배분에 함께 쓴다(법마다 awk 를 두 번만 돈다).
 # law_awk render <파일> <몫>    첫 줄 F(전문)/C(축약) 뒤에 몫 안의 본문. 축약본 = 축약 표시를 단 제목 +
-#                               머리 블록(최우선 수칙) + 조문 목차(### 줄) + 최종 준법 체크리스트 + 전문 경로.
+#                               머리 블록(최우선 수칙) + 조문 본문 앞부분(몫이 남는 만큼, 장·조 단위) +
+#                               조문 목차(### 줄) + 최종 준법 체크리스트 + 전문 경로.
 #                               그래도 넘치면 문자 경계에서 자르고, 코드 펜스 짝을 맞춘 뒤 생략 표시와 전문
 #                               경로를 붙인다. 표시는 제목 줄에 두어 잘려도 남게 하고, 경로는 한 번만 쓴다.
 # YAML 프론트매터는 뺀다. description 은 스킬 트리거 조건이지 조문이 아니다.
+# 줄 끝 CR 과 첫 줄 BOM 은 맨 먼저 지운다. 남겨 두면 CRLF 파일의 프론트매터(description)가 "이미 시행
+# 중"이라는 권위로 본문과 함께 주입된다.
 LAW_AWK='
 function fences(s,   a, i, m, k) { m = split(s, a, "\n"); k = 0; for (i = 1; i <= m; i++) if (a[i] ~ /^[ \t]*```/) k++; return k }
+{ sub(/\r$/, ""); if (NR == 1) sub(/^\357\273\277/, "") }
 NR == 1 && $0 == "---" { fm = 1; next }
 fm == 1 { if ($0 == "---") fm = 2; next }
 {
@@ -186,18 +197,42 @@ fm == 1 { if ($0 == "---") fm = 2; next }
   } else if (!fence && line ~ /^### /) toc = toc "\n" line
   if (sec == "head") head = head "\n" line
   else if (sec == "chk") chk = chk "\n" line
+  else {
+    # 머리 블록·체크리스트 밖의 본문을 장(##)·조(###) 경계에서 조각낸다. 펜스 안에서는 자르지 않는다.
+    if (!fence && line ~ /^###? / || nk == 0) nk++
+    K[nk] = K[nk] (K[nk] == "" ? "" : "\n") line
+  }
 }
 END {
   body = trim(body)
-  if (mode == "check") exit ((body ~ /[^ \t\n\r]/) ? 0 : 1)
+  if (mode == "len") { print u8len(body); exit }
   if (!u8over(body, share)) { print "F"; printf "%s", body; exit }
-  c = (title != "" ? title " " : "") ENVIRON["LAW_TAG"]
+  c = (title != "" ? title : "# " ENVIRON["LAW_NAME"]) " " ENVIRON["LAW_TAG"]
   if ((h = trim(head)) != "") c = c "\n\n" h
   if ((h = trim(toc)) != "") c = c "\n\n" h
   if ((h = trim(chk)) != "") c = c "\n\n" h
   print "C"
   full = c "\n\n" ENVIRON["LAW_MARK"]
-  if (!u8over(full, share)) { printf "%s", full; exit }
+  if (!u8over(full, share)) {
+    # 몫이 남으면 머리 블록 뒤에 조문 본문을 앞에서부터 장·조 단위로 채운다. 들어가지 않는 조각에서 멈춘다.
+    room = share - u8len(full) - u8len(ENVIRON["LAW_PART"]) - 4
+    fill = ""
+    for (i = 1; i <= nk; i++) {
+      piece = trim(K[i]); if (piece == "") continue
+      add = (fill == "" ? "" : "\n\n") piece
+      L = u8len(add); if (L > room) break
+      fill = fill add; room -= L
+    }
+    if (fill != "") {
+      x = (title != "" ? title : "# " ENVIRON["LAW_NAME"]) " " ENVIRON["LAW_TAG"]
+      if ((h = trim(head)) != "") x = x "\n\n" h
+      x = x "\n\n" ENVIRON["LAW_PART"] "\n\n" fill
+      if ((h = trim(toc)) != "") x = x "\n\n" h
+      if ((h = trim(chk)) != "") x = x "\n\n" h
+      full = x "\n\n" ENVIRON["LAW_MARK"]
+    }
+    printf "%s", full; exit
+  }
   tail = "\n" ENVIRON["LAW_OMIT"]
   room = share - u8len(tail) - 4
   c = u8cut(c, room < 0 ? 0 : room)
@@ -227,9 +262,13 @@ The ledger is a record, not a grant of permission. Follow it only where it makes
   LEDGER_FOOT='Full text: ~/.claude/ai-lawbook/confessions.md'
   MORE_PRE='… and '; MORE_POST=' more'
   TAG='(condensed)'; MARK='(condensed) Full text:'; OMIT='…(rest omitted) Full text:'
+  PART='— Article text, first part (the rest is in the article index below and the full text) —'
   UP_PRE='⚖️ AI Lawbook top offense: '; UP_MID=' ('
   UP_POST=' repeats). Do not repeat it in any output this turn, notes between tool calls included; end substantive work with the verdict line.'
-  MISS_MSG="not found in the lawbook or empty, skipped"
+  BAD_MSG="not a valid law name (kebab-case), skipped"
+  MISS_MSG="not found in the lawbook, skipped"
+  EMPTY_MSG="law body is empty, skipped"
+  OVER_MSG="names beyond the first 64 skipped"
 else
   LAWS_HEAD='<ai-lawbook>
 아래 AI법은 사용자가 시행 명부(~/.claude/ai-lawbook/enabled-laws)에 올려 이 세션에
@@ -250,9 +289,13 @@ else
   LEDGER_FOOT='전문: ~/.claude/ai-lawbook/confessions.md'
   MORE_PRE='… 외 '; MORE_POST='건'
   TAG='(축약)'; MARK='(축약) 전문:'; OMIT='…(이하 생략) 전문:'
+  PART='— 조문 본문 앞부분(나머지는 아래 목차와 전문 경로) —'
   UP_PRE='⚖️ AI 법전 최다 전과: '; UP_MID=' (재범 '
   UP_POST='회). 이번 턴의 모든 출력(도구 사이 설명 포함)에서 재범하지 말고, 실질 작업을 마치면 판결 한 줄을 남겨라.'
-  MISS_MSG="법전에 없거나 본문이 비어 건너뜀"
+  BAD_MSG="법 이름 형식(kebab-case)이 아니라 건너뜀"
+  MISS_MSG="법전에 없어 건너뜀"
+  EMPTY_MSG="본문이 비어 건너뜀"
+  OVER_MSG="64개를 넘는 이름은 건너뜀"
 fi
 
 # ── UserPromptSubmit: 법을 읽기 전에 최다 전과 한 줄만 낸다 ───────────────────
@@ -284,32 +327,64 @@ find_law() {
 
 enabled=()
 files=()
-missing=()
-if [ -r "$ROSTER" ]; then
-  # 이름은 64개까지만 본다. 법이 그보다 많으면 한 법의 몫이 수십 자라 어차피 쓸 수 없고, 명부가
-  # 망가져 수천 줄이어도 훅 타임아웃(10초) 안에 끝나야 한다. 128바이트보다 긴 줄은 법 이름일 수
-  # 없으므로 공백 제거(긴 문자열에서 느림) 없이 "…" 로 보고한다.
-  while IFS= read -r line || [ -n "$line" ]; do
-    name="${line%%#*}"
-    [ "${#name}" -le 128 ] || name="…"
-    name="${name//[[:space:]]/}"
-    [ -n "$name" ] || continue
-    case " ${enabled[*]-} ${missing[*]-} " in *" ${name} "*) continue ;; esac
-    [ $(( ${#enabled[@]} + ${#missing[@]} )) -lt 64 ] || break
-    # 이름은 kebab-case 만 허용한다. `../` 같은 경로가 명부를 통해 들어오지 못하게 한다.
-    if [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]] && file="$(find_law "$name")" && law_awk check "$file"; then
+lens=()     # 법 본문 길이(UTF-16 단위). 예산 배분에 쓴다
+bad=()      # 이름 형식이 틀림(kebab-case 아님)
+missing=()  # 법전에 없음
+empty=()    # 파일은 있으나 본문이 비어 있음
+seen=" "
+listed=0
+over=0      # 서로 다른 이름이 64개를 넘었는가
+# add_law <이름> — 이름 하나를 판정해 위 배열 가운데 하나에 넣는다. 같은 이름은 한 번만 본다.
+# 128바이트보다 긴 이름은 법 이름일 수 없으므로 "…" 로 보고한다. 서브셸을 띄우지 않는다(중복 줄 수천 개도 빠르게).
+add_law() {
+  local name="$1" file len
+  [ "${#name}" -le 128 ] || name="…"
+  case "$seen" in *" ${name} "*) return 0 ;; esac
+  seen="${seen}${name} "
+  listed=$((listed + 1))
+  # 이름은 kebab-case 만 허용한다. `../` 같은 경로가 명부를 통해 들어오지 못하게 한다.
+  if ! [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+    bad+=("$name")
+  elif ! file="$(find_law "$name")"; then
+    missing+=("$name")
+  else
+    len="$(law_awk len "$file")"
+    if [ "${len:-0}" -gt 0 ]; then
       enabled+=("$name")
       files+=("$file")
+      lens+=("$len")
     else
-      missing+=("$name")
+      empty+=("$name")
     fi
-  done < "$ROSTER"
+  fi
+}
+if [ -r "$ROSTER" ]; then
+  # 이름은 64개까지만 본다. 법이 그보다 많으면 한 법의 몫이 수십 자라 어차피 쓸 수 없고, 명부가
+  # 망가져 수천 줄이어도 훅 타임아웃(10초) 안에 끝나야 한다. 한 줄에 쉼표나 공백으로 여러 이름을 적어도 된다.
+  # 명부는 awk 로 한 번에 소문자로 바꾸고 CR 을 공백으로 바꿔 읽는다(줄마다 앞 4,096바이트, 2만 줄까지).
+  # 첫 줄의 UTF-8 BOM(메모장 등이 붙임)은 지운다. 남기면 첫 법이 "없는 법"이 된다.
+  BOM="$(printf '\357\273\277')"
+  first=1
+  set -f  # 이름에 든 * 가 파일 이름으로 펼쳐지지 않게 한다
+  while IFS= read -r line || [ -n "$line" ]; do
+    [ "$first" = 1 ] && line="${line#"$BOM"}"; first=0
+    line="${line%%#*}"
+    for name in ${line//,/ }; do
+      if [ "$listed" -ge 64 ]; then
+        case "$seen" in *" ${name} "*) continue ;; esac
+        over=1; break 2
+      fi
+      add_law "$name"
+    done
+  done < <(LC_ALL=C awk 'NR > 20000 { exit } { s = substr($0, 1, 4096); gsub(/\r/, " ", s); print tolower(s) }' "$ROSTER")
+  set +f
 fi
 
 entries=0
-[ -r "$LEDGER" ] && entries="$(grep -c '^## \[' "$LEDGER" || true)"
+[ -r "$LEDGER" ] && entries="$(ledger_awk count 0)"
+[ -n "$entries" ] || entries=0
 
-[ "${#enabled[@]}" -gt 0 ] || [ "$entries" -gt 0 ] || [ "${#missing[@]}" -gt 0 ] || exit 0
+[ "${#enabled[@]}" -gt 0 ] || [ "$entries" -gt 0 ] || [ "$listed" -gt 0 ] || exit 0
 
 if [ "$LANG_CODE" = "en" ]; then
   MSG="AI Lawbook: ${#enabled[@]} law(s) in force, ${entries} confession(s) on record"
@@ -318,7 +393,12 @@ else
 fi
 # 이름 목록은 잘라 둔다. jq 가 없으면 상태 메시지가 본문(9000자)과 함께 평문 컨텍스트로 들어간다.
 [ "${#enabled[@]}" -gt 0 ] && MSG="${MSG} ($(printf '%s' "${enabled[*]}" | u8 fit 300))"
-[ "${#missing[@]}" -gt 0 ] && MSG="${MSG} — $(printf '%s' "${missing[*]}" | u8 fit 200): ${MISS_MSG}"
+# 건너뛴 이름은 사유별로 알린다. 사유마다 200자에서 자른다.
+skipped() { [ "$2" -gt 0 ] && MSG="${MSG} — $(printf '%s' "$3" | u8 fit 200): $1"; }
+skipped "$BAD_MSG" "${#bad[@]}" "${bad[*]-}"
+skipped "$MISS_MSG" "${#missing[@]}" "${missing[*]-}"
+skipped "$EMPTY_MSG" "${#empty[@]}" "${empty[*]-}"
+[ "$over" = 1 ] && MSG="${MSG} — ${OVER_MSG}"
 
 [ "$EVENT" = SubagentStart ] && LAWS_HEAD="${LAWS_HEAD}"$'\n'"${SUB_NOTE}"
 LAWS_HEAD="${LAWS_HEAD}"$'\n''</ai-lawbook>'
@@ -340,12 +420,29 @@ n=${#enabled[@]}
 if [ "$n" -gt 0 ]; then
   pre="$LAWS_HEAD"
   [ -n "$ledger" ] && pre="${pre}"$'\n\n'"${ledger}"
-  share=$(( (CAP - $(printf '%s' "$pre" | u8 len) - 2 - 7 * (n - 1)) / n ))
+  # 예산 배분(물 채우기): 몫보다 짧은 법은 전문으로 확정하고, 그만큼 남은 예산을 나머지 법에 다시
+  # 나눈다. 더 확정할 법이 없을 때까지 되풀이한다. 몫을 똑같이 나누기만 하면 짧은 규칙 하나를 함께
+  # 올릴 때 긴 법이 예산을 거의 남긴 채 축약된다.
+  budget=$(( CAP - $(printf '%s' "$pre" | u8 len) - 2 - 7 * (n - 1) ))
+  shares=(); i=0
+  while [ "$i" -lt "$n" ]; do shares+=(-1); i=$((i + 1)); done
+  left=$n; changed=1
+  while [ "$changed" = 1 ] && [ "$left" -gt 0 ]; do
+    changed=0; share=$(( budget / left )); i=0
+    while [ "$i" -lt "$n" ]; do
+      if [ "${shares[$i]}" -lt 0 ] && [ "${lens[$i]}" -le "$share" ]; then
+        shares[$i]=${lens[$i]}; budget=$(( budget - lens[i] )); left=$((left - 1)); changed=1
+      fi
+      i=$((i + 1))
+    done
+  done
+  share=0; [ "$left" -gt 0 ] && share=$(( budget / left ))
   laws=""
   i=0
   while [ "$i" -lt "$n" ]; do
-    out="$(LAW_TAG="$TAG" LAW_MARK="${MARK} ${files[$i]}" LAW_OMIT="${OMIT} ${files[$i]}" \
-           law_awk render "${files[$i]}" "$share")"
+    [ "${shares[$i]}" -ge 0 ] || shares[$i]=$share
+    out="$(LAW_NAME="${enabled[$i]}" LAW_TAG="$TAG" LAW_PART="$PART" LAW_MARK="${MARK} ${files[$i]}" LAW_OMIT="${OMIT} ${files[$i]}" \
+           law_awk render "${files[$i]}" "${shares[$i]}")"
     [ "${out%%$'\n'*}" = C ] && trimmed=1
     laws="${laws}${laws:+$'\n\n---\n\n'}${out#*$'\n'}"
     i=$((i + 1))

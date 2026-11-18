@@ -1,0 +1,29 @@
+name: 새 법 제안 · Law proposal
+description: 새 직무 AI법이나 조문을 제안합니다 · Propose a new role law or article
+labels: ["law-proposal"]
+body:
+  - type: input
+    id: role
+    attributes:
+      label: 직무 · Role
+      placeholder: 예) QA 엔지니어 · e.g. QA engineer
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: AI가 실제로 저지르는 실패 · The failure AI actually commits
+      description: 겪은 사례를 일반화해 적어 주세요. 비밀값·고객명·사내 정보는 빼 주세요. · Describe it in general terms; leave out secrets, customer names, and company details.
+    validations:
+      required: true
+  - type: textarea
+    id: check
+    attributes:
+      label: 지켰는지 확인하는 방법 · How compliance is checked
+      placeholder: 예) 테스트를 두 번 돌려 결과가 같은지 확인 · e.g. run the test twice and compare
+    validations:
+      required: true
+  - type: textarea
+    id: line
+    attributes:
+      label: 절대 넘으면 안 되는 선 · The line that must never be crossed

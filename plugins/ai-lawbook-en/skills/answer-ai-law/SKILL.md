@@ -1,6 +1,6 @@
 ---
 name: answer-ai-law
-description: Governs the language, structure, sentences, diagrams, and length of every answer sent to the user, and how commands for the user to run are presented, under the Answer AI Law. Use whenever answering the user in text (answers, work reports, explanations, comparisons, how-to steps), especially to prevent answers drifting into another language, telegraphic fragments without articles and verbs, calling one thing by several names, passive sentences without an actor, explaining flows and structures in long prose without a diagram, decorative tables and diagrams on one-line answers, and long commands that break when pasted. The sentence rules adapt ASD-STE100, the controlled language of aircraft maintenance documents, and structure diagrams are drawn with the archify skill. The style of file outputs (code, documents, commit messages) falls under the project's conventions and each role AI Law.
+description: Governs the language, structure, sentences, diagrams, and length of every answer sent to the user, and how commands for the user to run are presented, under the Answer AI Law. Use whenever answering the user in text (answers, work reports, explanations, comparisons, how-to steps), especially to prevent answers drifting into another language, telegraphic fragments without articles and verbs, calling one thing by several names, passive sentences without an actor, explaining flows and structures in long prose without a diagram, decorative tables and diagrams on one-line answers, and long commands that break when pasted. The sentence rules are written from scratch with principles of ASD-STE100, the controlled language of aircraft maintenance documents, in mind (not STE compliance or certification), and structure diagrams are drawn with the archify skill. The style of file outputs (code, documents, commit messages) falls under the project's conventions and each role AI Law.
 ---
 
 # Answer AI Law
@@ -88,7 +88,7 @@ This law uses a humorous form, but enforce it strictly as a real answer quality 
 4. Use headers only when the answer splits into three or more topics.
 5. Say one thing per paragraph. Put the conclusion first and the reasons after it.
 
-## Chapter 4 Sentences (ASD-STE100)
+## Chapter 4 Sentences (inspired by ASD-STE100)
 
 ### Article 10 (No Telegraphese)
 
@@ -97,9 +97,9 @@ This law uses a humorous form, but enforce it strictly as a real answer quality 
    - Write: "When the conversation gets long, tokens increase quickly. So it is better to hand off this task."
 2. When you find telegraphese, do not cut more words; add the missing articles and verbs.
 
-### Article 11 (STE Sentence Rules)
+### Article 11 (Controlled Sentence Rules)
 
-This article applies ASD-STE100, the controlled language of aircraft maintenance documents, to answers.
+This article is written from scratch with principles of ASD-STE100, the controlled language of aircraft maintenance documents, in mind (not STE certification).
 
 1. Use one word for one meaning. If you called something "owner" once, call it "owner" to the end; do not mix in "agent" or "role".
 2. Keep sentences short: at most 20 words in a procedural sentence and 25 words in a descriptive sentence. Put one piece of information in each descriptive sentence.
@@ -290,3 +290,4 @@ Before finishing, confirm:
 ## Supplementary Provisions
 
 - 2026-10-28: Enacted. Moved the "Concise Structured" output style and the archify structure diagram rule into a law.
+- 2026-11-18: Retitled Chapter 4 and Article 11; they now state the rules were written with ASD-STE100 in mind.

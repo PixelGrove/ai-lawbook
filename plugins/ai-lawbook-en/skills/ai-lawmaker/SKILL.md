@@ -24,7 +24,7 @@ This skill governs the enactment, amendment, repeal, and entry into force of AI 
 1. **Built-in laws (precedents)**: These live under this plugin's `skills/` directory,
    alongside this skill's directory. Read each one at `../<name>/SKILL.md`. If the sibling
    directories hold no precedents (the skill was installed on its own), refer to the originals at
-   https://github.com/jinyeong03/ai-lawbook/tree/main/plugins/ai-lawbook-en/skills.
+   https://github.com/PixelGrove/ai-lawbook/tree/main/plugins/ai-lawbook-en/skills.
 
    | Skill | Law Name | Role |
    |---|---|---|
@@ -40,6 +40,7 @@ This skill governs the enactment, amendment, repeal, and entry into force of AI 
    | `educator-ai-law` | Educator AI Law | Lesson plans, teaching materials, assessment items, grading and feedback |
    | `hr-ai-law` | HR AI Law | Hiring, evaluation and pay, HR policies, discipline documents |
    | `sales-ai-law` | Sales AI Law | Proposals, outreach, quotes, CRM notes, pipeline forecasts |
+   | `answer-ai-law` | Answer AI Law | Every answer in every role: language, structure, sentences, diagrams |
 
 2. **User-enacted laws**: Place them at `~/.claude/skills/<name>/SKILL.md` (all projects) or
    `<project>/.claude/skills/<name>/SKILL.md` (that project only). Project laws load only as
@@ -111,9 +112,10 @@ After saving, actually check the following and report the results.
 1. Ask the user whether to force-apply the new law in every session.
 2. If they agree, add its name to the enforcement roster on a line of its own. Create the file if it does not exist.
 3. Tell the user: the harness cuts hook output over 10,000 characters down to a short preview.
-   So the hook fits its injection in 9,000 characters (6,000 for a subagent); a law that does not
-   fit is injected condensed, as its Top Rules, article index, and checklist, with the path to its
-   full text. The more laws in force, the more each one is condensed. A law not in force is still invoked automatically as a skill
+   So the hook fits its injection in 9,000 characters (6,000 for a subagent). Short laws go in whole
+   and hand their unused budget to the long ones; a law that still does not fit is injected condensed,
+   as its Top Rules, article index, and checklist, filled with article text from the start, chapter by chapter and article by article, for as much
+   of its share as is left, with the path to its full text. The more laws in force, the more each one is condensed. A law not in force is still invoked automatically as a skill
    for tasks its `description` matches.
 
 ## Chapter 3 Amendment and Repeal
@@ -203,17 +205,21 @@ even if only one entry carries it, so delete every copy). Without `jq` (1.6 or l
 
 ### Article 14 (Roster Format)
 
-Write one law name per line. Anything after `#` is a comment.
+Write one law name per line, or several separated by commas or spaces. Anything after `#` is a comment.
+Uppercase is read as lowercase, and a BOM on the first line and CRs at line ends are ignored.
 
 ```text
 # ~/.claude/ai-lawbook/enabled-laws
 developer-ai-law
 designer-ai-law   # lots of UI work
+writer-ai-law, translator-ai-law
 ```
 
 1. Every listed law is injected at session start, resume, context compaction, and subagent start (within the cap in Article 8(3)).
 2. If the roster is missing or empty, laws apply only through automatic skill invocation, and only the Confession Ledger is injected.
-3. If the roster lists a name that matches no law, or a law with an empty body, the hook notes it in the session-start status message and skips it.
+3. If the roster lists a name that is not valid kebab-case, matches no law, or names a law with an empty body, the hook
+   reports the name and the reason in the session-start status message and skips it. Only the first 64 distinct
+   names are read; the message says when more were skipped.
 
 ## Chapter 6 Verdict
 
@@ -228,3 +234,5 @@ If any review item did not pass, do not present the review as passed; list the i
 ## Supplementary Provisions
 
 - 2026-10-25: 1.2.0 — Top Rules, ledger size limits, machine-rule lines
+- 2026-11-18: 1.4.0 — Answer AI Law added to the Article 2 precedent table. Amended Article 8(3) (budget redistribution and
+  filling condensed laws with article text) and Article 14 (several names per line, uppercase/BOM/CR handling, skip reasons)

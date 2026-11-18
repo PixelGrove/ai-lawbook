@@ -1,10 +1,10 @@
 {
   "name": "ai-lawbook-en",
-  "version": "1.3.0",
-  "description": "AI Lawbook — 12 role-based AI Laws (developer, designer, PM, marketer, writer, translator, data analyst, researcher, support, educator, HR, sales), a lawmaker skill, and a Confession Ledger that follows your agent across sessions.",
-  "author": { "name": "jinyeong03", "url": "https://github.com/jinyeong03" },
-  "homepage": "https://github.com/jinyeong03/ai-lawbook",
-  "repository": "https://github.com/jinyeong03/ai-lawbook",
-  "license": "MIT",
+  "version": "1.4.0",
+  "description": "AI Lawbook — 12 role-based AI Laws (developer, designer, PM, marketer, writer, translator, data analyst, researcher, support, educator, HR, sales) plus the Answer AI Law, a lawmaker skill, a Confession Ledger that follows your agent across sessions, and a guard hook that enforces its rules.",
+  "author": { "name": "Pixel._.Grove", "url": "https://github.com/PixelGrove" },
+  "homepage": "https://github.com/PixelGrove/ai-lawbook",
+  "repository": "https://github.com/PixelGrove/ai-lawbook",
+  "license": "LicenseRef-MIT-Commons-Clause",
   "keywords": ["ai-law", "agent-skills", "quality-gate", "guardrails", "prompt-engineering"]
 }

@@ -38,6 +38,10 @@ for f in "$ROOT/.claude-plugin/marketplace.json" "$KO/.claude-plugin/plugin.json
 done
 check "both plugins ship the identical inject script" 'cmp -s "$KO/hooks/inject.sh" "$EN/hooks/inject.sh"'
 check "both plugins ship the identical guard script" 'cmp -s "$KO/hooks/guard.sh" "$EN/hooks/guard.sh"'
+check "ko and en plugin versions match" '[ "$(jq -r .version "$KO/.claude-plugin/plugin.json")" = "$(jq -r .version "$EN/.claude-plugin/plugin.json")" ]'
+# A hook that crashes must never block: UserPromptSubmit exit 2 erases the prompt, PreToolUse exit 2 blocks the tool.
+check "every hook command ends with || true (both plugins)" '[ "$(jq -r ".hooks[][] .hooks[] .command" "$KO/hooks/hooks.json" "$EN/hooks/hooks.json" | grep -vc " || true\$")" = 0 ]'
+check ".gitattributes pins LF line endings" 'grep -q "eol=lf" "$ROOT/.gitattributes"'
 hook_cmd() { jq -r --arg ev "$2" --arg m "${3:-}" '.hooks[$ev][]? | select((.matcher // "") == $m) | .hooks[].command' "$1"; }
 for side in "$KO" "$EN"; do
   l="$([ "$side" = "$KO" ] && echo ko || echo en)"
@@ -55,8 +59,8 @@ printf '# comment\n\ndeveloper-ai-law   # inline comment\ndeveloper-ai-law\nno-s
 check "roster: injects law (full or condensed)" 'ctx | grep -q "^# 개발자 AI법"'
 check "roster: strips frontmatter" '! ctx | grep -q "^name: developer-ai-law"'
 check "roster: duplicate name injected once" '[ "$(ctx | grep -c "^# 개발자 AI법")" = 1 ]'
-check "roster: unknown law reported" 'msg | grep -q "no-such-law"'
-check "roster: path traversal rejected" 'msg | grep -q "\.\./\.\./etc" && ! ctx | grep -q "root:"'
+check "roster: unknown law reported with its reason" 'msg | grep -q "no-such-law: 법전에 없어 건너뜀"'
+check "roster: path traversal rejected as a bad name" 'msg | grep -q "\.\./\.\./etc: 법 이름 형식" && ! ctx | grep -q "root:"'
 check "systemMessage counts laws" 'msg | grep -q "시행 중 1개"'
 
 mkdir -p "$TMP/home/.claude/skills/developer-ai-law" "$TMP/proj/.claude/skills/developer-ai-law"
@@ -71,7 +75,7 @@ rm -rf "$TMP/proj"
 mkdir -p "$TMP/home/.claude/skills/empty-law"
 printf -- '---\nname: empty-law\ndescription: x\n---\n\n   \n' > "$TMP/home/.claude/skills/empty-law/SKILL.md"
 printf 'empty-law\n' >> "$BOOK/enabled-laws"
-check "law with an empty body is reported, not silently skipped" 'msg | grep -q "empty-law: 법전에 없거나 본문이 비어"'
+check "law with an empty body is reported, not silently skipped" 'msg | grep -q "empty-law: 본문이 비어 건너뜀"'
 check "law with an empty body is not counted" 'msg | grep -q "시행 중 1개"'
 
 # A head block that is one long code block forces the cut to land inside the fence.
@@ -85,6 +89,47 @@ mv "$BOOK/enabled-laws" "$BOOK/enabled-laws.bak"
 printf 'fence-law\n' > "$BOOK/enabled-laws"
 check "condensed law cut inside a code block closes the fence" 'out="$(ctx)"; [ $(( $(printf "%s\n" "$out" | grep -c "^\`\`\`") % 2 )) = 0 ] && printf "%s" "$out" | grep -q "^…(이하 생략) 전문: .*/fence-law/SKILL.md$"'
 check "condensed law stays within the budget" '[ "$(outchars ctx)" -le 9000 ]'
+mv "$BOOK/enabled-laws.bak" "$BOOK/enabled-laws"
+rm -rf "$TMP/home/.claude/skills"
+
+# Notepad adds a BOM; people type names in caps or on one line with commas.
+mv "$BOOK/enabled-laws" "$BOOK/enabled-laws.bak"
+printf '\357\273\277developer-ai-law\r\nDesigner-AI-Law\nwriter-ai-law, translator-ai-law\n' > "$BOOK/enabled-laws"
+check "roster: BOM, CRLF, uppercase and comma-separated names are read" 'msg | grep -q "시행 중 4개, 반성문 0건 (developer-ai-law designer-ai-law writer-ai-law translator-ai-law)"'
+# A line longer than 128 bytes is split first: all 14 laws on one comma-separated line must be read.
+ls "$KO/skills" | paste -sd, - | sed 's/,/, /g' > "$BOOK/enabled-laws"
+check "roster: 14 laws on one comma-separated line (>128 bytes) are all read" 'msg | grep -q "시행 중 14개"'
+{ i=0; while [ "$i" -lt 300 ]; do printf a; i=$((i + 1)); done; printf ', developer-ai-law\n'; } > "$BOOK/enabled-laws"
+check "roster: an over-long name is reported as … and the next name still counts" 'msg | grep -q "시행 중 1개" && msg | grep -q "…: 법 이름 형식"'
+i=0; while [ "$i" -lt 5000 ]; do echo Developer-AI-Law; i=$((i + 1)); done > "$BOOK/enabled-laws"
+check "roster: 5,000 duplicate uppercase lines finish within 3s" 's=$SECONDS; msg | grep -q "시행 중 1개" && [ $((SECONDS - s)) -lt 3 ]'
+# A CRLF law file must not leak its frontmatter (the description) into the injected text.
+mkdir -p "$TMP/home/.claude/skills/crlf-law"
+printf -- '---\r\nname: crlf-law\r\ndescription: SECRET_TRIGGER_TEXT\r\n---\r\n# CRLF 법\r\n1. 규칙\r\n' > "$TMP/home/.claude/skills/crlf-law/SKILL.md"
+printf 'crlf-law\n' > "$BOOK/enabled-laws"
+check "CRLF law: frontmatter stripped, no carriage returns injected" 'out="$(ctx)"; printf "%s" "$out" | grep -q "^# CRLF 법$" && ! printf "%s" "$out" | grep -q SECRET_TRIGGER_TEXT && ! printf "%s" "$out" | LC_ALL=C grep -q "$(printf "\r")"'
+# Budget water-filling: a short rule next to a long law must not force the long law into its condensed form.
+# The long law is synthetic (about 7,000 chars) so the check does not depend on a real law's length.
+mkdir -p "$TMP/home/.claude/skills/brief-rule" "$TMP/home/.claude/skills/long-law"
+printf -- '---\nname: brief-rule\ndescription: x\n---\n# 짧은 규칙\n1. 다섯 줄 안으로 답하라.\n' > "$TMP/home/.claude/skills/brief-rule/SKILL.md"
+{ printf -- '---\nname: long-law\ndescription: x\n---\n# 긴 법\n\n## 제1장\n\n'; i=1; while [ "$i" -le 120 ]; do printf '### 제%s조(조문)\n긴 법의 조문 본문 문장입니다 %s번.\n\n' "$i" "$i"; i=$((i + 1)); done; } > "$TMP/home/.claude/skills/long-law/SKILL.md"
+printf 'long-law\nbrief-rule\n' > "$BOOK/enabled-laws"
+check "budget: a short rule leaves its share to the long law (no condensing)" 'out="$(ctx)"; ! printf "%s" "$out" | grep -q "(축약)" && printf "%s" "$out" | grep -q "^# 긴 법$" && printf "%s" "$out" | grep -q "^# 짧은 규칙$" && printf "%s" "$out" | grep -q "120번"'
+printf 'answer-ai-law\n' > "$BOOK/enabled-laws"
+check "budget: the Answer AI Law alone (no ledger) still fits whole" '! ctx | grep -q "(축약)" && ctx | grep -q "^# 답변 AI법$"'
+printf 'answer-ai-law\nbrief-rule\n' > "$BOOK/enabled-laws"
+check "budget: water-filled payload stays within 9000" '[ "$(outchars ctx)" -le 9000 ]'
+# With a ledger entry the Answer AI Law no longer fits whole; its condensed form must still use the leftover share.
+printf -- '---\nname: brief-rule\ndescription: x\n---\n# 짧은 규칙\n1. 답변은 다섯 줄 안으로 쓰고, 표는 꼭 필요할 때만 쓰며, 결론은 첫 줄에 쓰고 근거는 두 줄 안으로 줄여라.\n' > "$TMP/home/.claude/skills/brief-rule/SKILL.md"
+printf '## [A] 장부 항목\n- 재범: 1회\n' > "$BOOK/confessions.md"
+check "budget: a condensed law fills its leftover share with article text" 'out="$(ctx)"; printf "%s" "$out" | grep -q "^# 답변 AI법 (축약)$" && printf "%s" "$out" | grep -q "조문 본문 앞부분" && printf "%s" "$out" | grep -q "사용자가 답의 결론을 첫 줄에서 얻게 하라" && [ "$(printf "%s" "$out" | nchars)" -gt 8000 ] && [ "$(printf "%s" "$out" | nchars)" -le 9000 ]'
+mkdir -p "$TMP/home/.claude/skills/notitle-law"
+{ printf -- '---\nname: notitle-law\ndescription: x\n---\n## 제1장\n\n'; i=1; while [ "$i" -le 300 ]; do printf '### 제%s조(조문)\n제목 없는 법의 조문 본문 %s번입니다.\n\n' "$i" "$i"; i=$((i + 1)); done; } > "$TMP/home/.claude/skills/notitle-law/SKILL.md"
+mv "$BOOK/enabled-laws" "$BOOK/enabled-laws.bak2"; printf 'notitle-law\n' > "$BOOK/enabled-laws"
+check "budget: a law without a # title is condensed under its name and still filled" 'out="$(ctx)"; printf "%s" "$out" | grep -q "^# notitle-law (축약)$" && [ "$(printf "%s" "$out" | grep -c "번입니다")" -gt 50 ]'
+mv "$BOOK/enabled-laws.bak2" "$BOOK/enabled-laws"
+check "budget: filled condensed law keeps code fences balanced" '[ $(( $(ctx | grep -c "^[[:space:]]*\`\`\`") % 2 )) = 0 ]'
+rm "$BOOK/confessions.md"
 mv "$BOOK/enabled-laws.bak" "$BOOK/enabled-laws"
 rm -rf "$TMP/home/.claude/skills"
 
@@ -111,8 +156,12 @@ check "english header" 'hook_en | jq -r .hookSpecificOutput.additionalContext | 
 
 # Without jq the hook must fall back instead of going silent.
 mkdir -p "$TMP/bin"
-for t in bash awk grep tr cat dirname; do ln -sf "$(command -v "$t")" "$TMP/bin/$t"; done
+for t in bash awk grep cat dirname; do ln -sf "$(command -v "$t")" "$TMP/bin/$t"; done
 check "no jq: plain-text fallback" 'HOOK_PATH="$TMP/bin" hook | grep -q "테스트 미실행 통과 주장"'
+printf 'Developer-AI-Law\r\n' > "$BOOK/enabled-laws"
+check "no jq, no tr: the roster is still read" 'HOOK_PATH="$TMP/bin" hook | grep -q "시행 중 1개"'
+check "UTF-8 locale: same roster result" '[ "$(hook LANG=ko_KR.UTF-8 LC_ALL=ko_KR.UTF-8 | jq -r .systemMessage)" = "$(msg)" ] && msg | grep -q "시행 중 1개"'
+rm "$BOOK/enabled-laws"
 
 # SessionStart context does not reach subagents, so the same payload is injected again on SubagentStart.
 echo "subagents"
@@ -148,6 +197,9 @@ check "subagent: nothing to inject, silent" '[ -z "$(sub)" ]'
 check "prompt: no ledger, silent, exit 0" '[ -z "$(ups)" ] && ups >/dev/null'
 printf '# 반성문 장부\n\n## [A] 횟수 없는 항목\n- 재범: 없음 (최초 2026-10-01)\n\n## [B] 다섯 번 어긴 항목\n- 재범: 5회 (최초 2026-10-01)\n' > "$BOOK/confessions.md"
 check "prompt: a repeat line without a count is not read as its date" 'upsctx | grep -qF "[B] 다섯 번 어긴 항목 (재범 5회)"'
+printf '# 반성문 장부\n\n```markdown\n## [예시법 제1조] 펜스 안 예시\n- 재범: 9회\n```\n\n## [A] 기록만 한 항목\n- 재범: 없음 (최초 2026-10-01)\n' > "$BOOK/confessions.md"
+check "ledger count skips example entries inside code fences" 'msg | grep -q "반성문 1건"'
+check "prompt: no reminder when no entry has a repeat count" '[ -z "$(ups)" ] && ups >/dev/null'
 rm "$BOOK/confessions.md"
 
 echo "budget"
@@ -229,6 +281,57 @@ Q_CMD='echo "pkill is banned" && grep '"'"'pkill'"'"' notes.txt'
 check "guard: rule text inside quotes passes" '[ -z "$(pre "$Q_CMD")" ]'
 check "guard: invalid or empty-matching regex ignored, other rules still apply" '[ -z "$(pre "ls -la")" ] && [ "$(decision "sudo pkill x")" = deny ]'
 ESC_CMD="echo it\\'s; pkill -f node; echo 'done'"; check "guard: an escaped quote does not hide the command after it" '[ "$(decision "$ESC_CMD")" = deny ]'
+HD_CMD="$(printf "cat > notes.txt <<EOF\nit's done\nEOF\npkill -f node")"
+check "guard: an apostrophe inside a heredoc does not hide the command after it" '[ "$(decision "$HD_CMD")" = deny ]'
+CM_CMD="$(printf "ls # don't\npkill -f node")"
+check "guard: an apostrophe inside a comment does not hide the next line" '[ "$(decision "$CM_CMD")" = deny ]'
+check "guard: a rule word only inside a comment passes (control: the same plus a real command is denied)" '[ -z "$(pre "ls # pkill later")" ] && [ "$(decision "$(printf "ls # pkill later\npkill x")")" = deny ]'
+check "guard: # inside a word is not a comment" '[ "$(decision "echo a#b && pkill x")" = deny ]'
+BASH_HD="$(printf "bash <<'EOF'\npkill -f node\nEOF")"
+check "guard: heredoc bodies stay checked (they can run)" '[ "$(decision "$BASH_HD")" = deny ]'
+TAB_HD="$(printf "cat <<-END\n\tit's\n\tEND\npkill y")"
+check "guard: <<- heredoc with a tab-indented terminator" '[ "$(decision "$TAB_HD")" = deny ]'
+IND_HD="$(printf "cat > notes.md <<'EOF'\n    EOF\nit's here\nEOF\npkill -f node")"
+check "guard: an indented EOF inside the body does not end the heredoc" '[ "$(decision "$IND_HD")" = deny ]'
+SP_HD="$(printf "cat <<EOF\nEOF \nit's\nEOF\npkill x")"
+check "guard: an EOF with a trailing space does not end the heredoc" '[ "$(decision "$SP_HD")" = deny ]'
+DASH_HD="$(printf "cat <<-EOF\n  EOF\nit's\n\tEOF\npkill x")"
+check "guard: <<- strips only tabs before the terminator" '[ "$(decision "$DASH_HD")" = deny ]'
+BS_HD="$(printf "cat > notes.txt <<\\\\EOF\nit's done\nEOF\npkill -f node")"
+check "guard: a backslash-quoted terminator (<<\\EOF) is a heredoc too" '[ "$(decision "$BS_HD")" = deny ]'
+check "guard: # right after \$(…) is not a comment" '[ "$(decision "echo \$(echo v)#tag; pkill -f node")" = deny ]'
+SHIFT1="$(printf 'n=3; echo $((1<<n))\necho "pkill is banned"')"
+SHIFT2="$(printf 'x=1 bits=2; (( y = x << bits ))\ngit commit -m "stop using pkill"')"
+check "guard: << inside (( )) and \$(( )) is a shift, not a heredoc" '[ -z "$(pre "$SHIFT1")" ] && [ -z "$(pre "$SHIFT2")" ]'
+check "guard: control — the shift inputs plus a real command are denied (the guard is alive)" '[ "$(decision "$(printf "%s\npkill x" "$SHIFT1")")" = deny ] && [ "$(decision "$(printf "%s\npkill x" "$SHIFT2")")" = deny ]'
+check "guard: # after an escaped space is not a comment" '[ "$(decision "cat /w/Issue\\ #42.md && pkill -f node")" = deny ]'
+SUB_CM="$(printf "(cd /tmp)# don't worry\npkill -f node")"
+check "guard: a comment right after ) cannot hide the next line" '[ "$(decision "$SUB_CM")" = deny ]'
+AR_HD="$(printf "echo \$(( \$(wc -l <<'EOF'\nit's\nEOF\n) + 1 ))\npkill -f node")"
+check "guard: a heredoc inside \$( ) inside \$(( )) is still a heredoc" '[ "$(decision "$AR_HD")" = deny ]'
+DQ_HD="$(printf "git commit --allow-empty -m \"\$(cat <<'EOF'\nUse a 12\" display; it's fine\nEOF\n)\" || true\npkill -f node")"
+check "guard: a heredoc in \"\$(cat <<'EOF' …)\" cannot hide the command after it" '[ "$(decision "$DQ_HD")" = deny ]'
+MSG_HD="$(printf "git commit -m \"\$(cat <<'EOF'\nfix: don't use pkill here\nEOF\n)\"")"
+check "guard: a commit message heredoc that only mentions a rule word passes" '[ -z "$(pre "$MSG_HD")" ] && [ "$(decision "$(printf "%s\npkill x" "$MSG_HD")")" = deny ]'
+check "guard: \\' inside \$'…' is an escape" '[ "$(decision "echo \$'"'"'it\\'"'"'s'"'"'; pkill -f node")" = deny ]'
+BS_CMD1='\pkill -f node'
+BS_CMD2='p\kill -f node'
+check "guard: a backslash before or inside a command name (\\pkill, p\\kill) does not hide it" '[ "$(decision "$BS_CMD1")" = deny ] && [ "$(decision "$BS_CMD2")" = deny ]'
+BT='`'
+BT_DQ="git commit -m \"Use ${BT}kill -0 \$\$${BT} instead of ${BT}pkill -f node${BT}\""
+check "guard: backticks inside double quotes are command substitution" '[ "$(decision "$BT_DQ")" = deny ]'
+PE_CMD='echo ${x:- # }; pkill -f node'
+check "guard: # inside \${ } is not a comment" '[ "$(decision "$PE_CMD")" = deny ]'
+CASE_DQ="$(printf "x=\"\$(case a in a) echo \"it's\";; esac)\"\npkill -f node")"
+check "guard: when parsing ends out of step with the shell, it judges the raw text (blocks)" '[ "$(decision "$CASE_DQ")" = deny ]'
+DEEP_CS="$(i=0; while [ "$i" -lt 50000 ]; do printf '$('; i=$((i + 1)); done; printf '\npkill q')"
+check "guard: 50,000 nested \$( are judged within 5s" 's=$SECONDS; [ "$(decision "$DEEP_CS")" = deny ] && [ $((SECONDS - s)) -lt 5 ]'
+MANY_HD="$(printf 'cat '; i=0; while [ "$i" -lt 33000 ]; do printf '<<A'; i=$((i + 1)); done; printf '\npkill q')"
+check "guard: 33,000 heredoc operators on one line are judged within 5s" 's=$SECONDS; [ "$(decision "$MANY_HD")" = deny ] && [ $((SECONDS - s)) -lt 5 ]'
+LINE_BIG="$(i=0; while [ "$i" -lt 20000 ]; do printf 'x<<2 '; i=$((i + 1)); done; printf '; pkill q')"
+check "guard: a 100K-char single line full of << is judged within 5s" 's=$SECONDS; [ "$(decision "$LINE_BIG")" = deny ] && [ $((SECONDS - s)) -lt 5 ]'
+BIG_HD="$(printf 'cat <<EOF\n'; i=0; while [ "$i" -lt 4000 ]; do printf "line %s it's fine\n" "$i"; i=$((i + 1)); done; printf 'EOF\npkill q')"
+check "guard: a 100K-char heredoc command is judged within 5s" 's=$SECONDS; [ "$(decision "$BIG_HD")" = deny ] && [ $((SECONDS - s)) -lt 5 ]'
 check "guard: quoted stash@{n} meets the rule's exception" '[ -z "$(pre "git stash drop \"stash@{1}\"")" ] && [ "$(decision "git stash drop")" = deny ]'
 check "guard: english Bash description → deny" '[ "$(decision "ls" "List files")" = deny ]'
 check "guard: korean Bash description passes" '[ -z "$(pre "ls" "파일 목록 보기")" ]'
@@ -262,6 +365,24 @@ check "guard: output keeps the tool output shape" '[ "$(post "password: x1" | jq
 # A shape that differs from the tool's output is ignored by the harness, which would let the raw secret through.
 NO_STDERR='{hook_event_name: "PostToolUse", tool_name: "Bash", tool_response: {stdout: "password: x1", interrupted: false, isImage: false}}'
 check "guard: masking adds no missing keys" '[ "$(jq -n "$NO_STDERR" | guard | jq -c ".hookSpecificOutput.updatedToolOutput | keys")" = "[\"interrupted\",\"isImage\",\"stdout\"]" ]'
+
+echo "license and docs"
+check "LICENSE is identical in the repo root and both plugins" 'cmp -s "$ROOT/LICENSE" "$KO/LICENSE" && cmp -s "$ROOT/LICENSE" "$EN/LICENSE"'
+check "LICENSE carries the Commons Clause and the full MIT text" 'grep -q "Commons Clause” License Condition v1.0" "$ROOT/LICENSE" && grep -q "Permission is hereby granted, free of charge" "$ROOT/LICENSE" && grep -q "Licensor: Pixel._.Grove" "$ROOT/LICENSE"'
+check "LICENSE keeps archify out of the Commons Clause" 'grep -q "except plugins/archify/" "$ROOT/LICENSE"'
+check "plugin.json license says LicenseRef-MIT-Commons-Clause (both)" '[ "$(jq -r .license "$KO/.claude-plugin/plugin.json")" = LicenseRef-MIT-Commons-Clause ] && [ "$(jq -r .license "$EN/.claude-plugin/plugin.json")" = LicenseRef-MIT-Commons-Clause ]'
+check "archify stays Apache-2.0" '[ "$(jq -r .license "$ROOT/plugins/archify/.claude-plugin/plugin.json")" = Apache-2.0 ]'
+check "both plugins ship a square PNG icon for the plugin directory" '( for d in "$KO" "$EN"; do f="$d/.claude-plugin/icon.png"; [ -r "$f" ] && [ "$(od -An -tx1 -N8 "$f" | tr -d " \n")" = 89504e470d0a1a0a ] || exit 1; done )'
+check "NOTICE and TRADEMARKS.md present" '[ -r "$ROOT/NOTICE" ] && [ -r "$ROOT/TRADEMARKS.md" ]'
+check "no 'open source' claim in manifests (Commons Clause is not OSI open source)" '! cat "$ROOT/.claude-plugin/marketplace.json" "$KO/.claude-plugin/plugin.json" "$EN/.claude-plugin/plugin.json" | grep -qiE "open[ -]?source|오픈 ?소스"'
+check "README badges no longer say plain MIT" '! grep -q "badge/license-MIT-" "$ROOT/README.md" "$ROOT/README.ko.md"'
+for side in "$KO" "$EN"; do
+  l="$([ "$side" = "$KO" ] && echo ko || echo en)"
+  for d in "$side"/skills/*/; do
+    n="$(basename "$d")"; [ "$n" = ai-lawmaker ] && continue
+    check "$l: ai-lawmaker precedent table lists $n" 'grep -qF "\`$n\`" "$side/skills/ai-lawmaker/SKILL.md"'
+  done
+done
 
 echo "laws"
 ko_names="$(cd "$KO/skills" && ls -d */ 2>/dev/null | tr -d / | sort)"

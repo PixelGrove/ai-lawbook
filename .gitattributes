@@ -1,0 +1,6 @@
+# 훅은 Windows(Git Bash)에서도 돈다. CRLF 로 체크아웃되면 bash 가 구문 오류를 내므로 줄 끝을 LF 로 고정한다.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.woff binary
+*.woff2 binary

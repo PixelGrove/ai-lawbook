@@ -1,0 +1,22 @@
+AI Lawbook (AI 법전)
+Copyright (c) 2026 Pixel._.Grove and contributors
+
+License history
+- 1.0.0 – 1.3.0 (up to commit bc01bfa): MIT License. Copies obtained under those versions stay MIT.
+- 1.4.0 and later: MIT License with the Commons Clause License Condition v1.0 (see LICENSE).
+  You may use, copy, change, and share the software for free, including at work.
+  You may not sell it, or sell a product or service whose value comes entirely or
+  substantially from it (including paid hosting or paid support for it).
+  This is source-available software, not open source as defined by the OSI.
+
+Third-party components
+- plugins/archify/: unmodified copy of tt-a1i/archify (upstream commit d605933),
+  Apache License 2.0. See plugins/archify/LICENSE, plugins/archify/NOTICE, and
+  plugins/archify/skills/archify/THIRD_PARTY_NOTICES.md. The Commons Clause does not apply to it.
+
+Names and logo
+- "AI 법전", "AI Lawbook", and the logo files (assets/logo.svg, plugins/*/.claude-plugin/icon.png) are not
+  licensed under LICENSE. See TRADEMARKS.md.
+
+Official distribution
+- https://github.com/PixelGrove/ai-lawbook and the Claude Code marketplace that points at it.

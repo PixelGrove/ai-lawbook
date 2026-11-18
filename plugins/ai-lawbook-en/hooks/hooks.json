@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/inject.sh\" en",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/inject.sh\" en || true",
             "timeout": 10,
             "statusMessage": "Loading AI Lawbook"
           }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/inject.sh\" en SubagentStart",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/inject.sh\" en SubagentStart || true",
             "timeout": 10
           }
         ]
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/inject.sh\" en UserPromptSubmit",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/inject.sh\" en UserPromptSubmit || true",
             "timeout": 5
           }
         ]
@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh\" || true",
             "timeout": 5
           }
         ]
@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh\" || true",
             "timeout": 5
           }
         ]
@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh\" || true",
             "timeout": 5
           }
         ]
@@ -74,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.sh\" || true",
             "timeout": 5
           }
         ]
