@@ -1,6 +1,8 @@
 ---
 name: ai-lawmaker
-description: Enacts, amends, and repeals AI Laws for roles, teams, and projects under the AI Lawmaking Act, and manages the enforcement roster (the laws force-applied in every session) and the Confession Ledger. Use when the user asks to "make an AI law for <role>", "turn our team rules into a law", "add an article to this law", "amend the law based on the confessions", or "which laws are in force?", or when a Confession Ledger entry reaches 3 or more repeat offenses, especially to prevent uncheckable articles, renumbering that breaks ledger references, edits to built-in plugin files that updates overwrite, silently overwritten laws, or ledger entries deleted without confirmation. For doing role work under an existing law, use that law instead.
+description: Enacts, amends, and repeals AI Laws and manages the enforcement roster and the Confession Ledger. Use for requests like "make an AI law for a role", "turn our team rules into a law", "add an article to this law", "amend the law from the confessions", or "which laws are in force?", or when a ledger entry reaches 3 repeat offenses. Prevents uncheckable articles, renumbering, and silent overwrites. For role work, use that role's law.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # AI Lawmaking Act
@@ -49,6 +51,10 @@ This skill governs the enactment, amendment, repeal, and entry into force of AI 
 3. **Enforcement roster**: `~/.claude/ai-lawbook/enabled-laws`. Every law listed here is
    force-injected into every session (size cap and condensation: Article 8(3)).
 4. **Confession Ledger**: `~/.claude/ai-lawbook/confessions.md`. It is force-injected into every session.
+5. **Other agents**: The enforcement roster and forced injection (paragraphs 3 and 4) work only when the AI Lawbook
+   plugin is installed in Claude Code. In other agents, tell the user to put user-enacted laws in that agent's skill
+   folder (for example `~/.agents/skills/` or `.agents/skills/`) and, to apply a law every time, to add a line such as
+   "Follow the ○○ AI Law for this work" to an instruction file like `AGENTS.md`.
 
 ### Article 3 (Standard Skeleton)
 
@@ -80,13 +86,13 @@ Every law follows `references/law-skeleton.md`. Read it before every enactment o
 
 ### Article 6 (Saving)
 
-1. Confirm the save location with the user. If the user does not answer, save it globally (`~/.claude/skills/`).
+1. Confirm the save location with the user. If the user does not answer, save it globally (`~/.claude/skills/`). In other agents, default to that agent's user skill folder (for example `~/.agents/skills/`).
 2. Also create `agents/openai.yaml` next to `SKILL.md` for Codex compatibility.
 
    ```yaml
    interface:
      display_name: "<Law Name>"
-     short_description: "<one-line description>"
+     short_description: "<one-line description, 25–64 characters>"
      default_prompt: "Use $<name> to do this task under the <Law Name>."
    ```
 
@@ -96,7 +102,8 @@ Every law follows `references/law-skeleton.md`. Read it before every enactment o
 
 After saving, actually check the following and report the results.
 
-1. Does the frontmatter `name` match the directory name, and is `description` 1024 characters or fewer?
+1. Does the frontmatter `name` match the directory name? Does `description` meet these rules: about 300 characters
+   in Korean or 450 in English recommended, 1024 at most, no `<` or `>`, and quoted if it contains a colon followed by a space or a space followed by `#`?
 2. Are all [COMMON] articles present: Consulting the Confession Ledger, Completion Verdict,
    Recording in the Confession Ledger, Special Provision on the AI Death Penalty, Final Compliance Checklist?
 3. Is the body length (`wc -l`) within the skeleton's target range?
@@ -216,6 +223,8 @@ writer-ai-law, translator-ai-law
 ```
 
 1. Every listed law is injected at session start, resume, context compaction, and subagent start (within the cap in Article 8(3)).
+   This injection works only when the AI Lawbook plugin is installed in Claude Code. In other agents, tell the user to put
+   user-enacted laws in that agent's skill folder and to name the laws to apply in an instruction file like `AGENTS.md` (Article 2(5)).
 2. If the roster is missing or empty, laws apply only through automatic skill invocation, and only the Confession Ledger is injected.
 3. If the roster lists a name that is not valid kebab-case, matches no law, or names a law with an empty body, the hook
    reports the name and the reason in the session-start status message and skips it. Only the first 64 distinct
@@ -236,3 +245,5 @@ If any review item did not pass, do not present the review as passed; list the i
 - 2026-10-25: 1.2.0 — Top Rules, ledger size limits, machine-rule lines
 - 2026-11-18: 1.4.0 — Answer AI Law added to the Article 2 precedent table. Amended Article 8(3) (budget redistribution and
   filling condensed laws with article text) and Article 14 (several names per line, uppercase/BOM/CR handling, skip reasons)
+- 2026-11-19: 1.5.0 — Added Article 2(5) (guidance for other agents). Amended Article 6(1) (default save location in other agents), 6(2) (openai.yaml template), Article 7(1)
+  (description rules), and Article 14(1) (guidance outside the plugin); shortened the description

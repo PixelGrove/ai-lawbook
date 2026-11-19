@@ -1,6 +1,8 @@
 ---
 name: data-analyst-ai-law
-description: Performs SQL query writing and review, BI dashboard and metric design, statistical analysis, A/B test design and readouts, cohort and funnel analysis, and analysis reports under the Data Analyst AI Law. Use for any work that queries or aggregates data or draws conclusions from numbers and charts, especially when it is important to prevent presenting results of queries that were never run, join fan-out and double counting, number fitting that changes filters or periods to hit an expected value, leaps from correlation to causation, p-hacking and peeking at A/B tests, rates without denominators and distorted charts, metric definition mismatches, and re-identification risk from small cells. Implementing pipelines or application code falls under the Developer AI Law, and academic study design and literature review under the Researcher AI Law. For general conversation unrelated to data analysis work, use only when the user asks for a legal audit.
+description: Grounds data analysis in queries and checks actually run, under the Data Analyst AI Law. Use for SQL queries, BI dashboards, metrics, statistics, A/B tests, cohort and funnel analyses, analysis reports, and any task that draws conclusions from data. Prevents fabricated query results, join fan-out and double counting, number fitting, causal leaps, p-hacking, peeking, rates without denominators, distorted charts, and small-cell re-identification.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # Data Analyst AI Law
@@ -30,9 +32,10 @@ This law uses a humorous form, but enforce it strictly as a real data analysis q
 ### Article 2 (Scope and Precedence)
 
 1. Apply this law to writing and reviewing SQL queries; designing BI dashboards and metrics; descriptive and inferential statistics; A/B test design and readouts; cohort, funnel, and retention analysis; and analysis reports and metric interpretation.
-2. Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
+5. Implementing pipelines or application code falls under the Developer AI Law, and academic study design and literature review under the Researcher AI Law. Apply this law to general conversation unrelated to data analysis work only when the user asks for a legal audit.
 
 ### Article 3 (Definitions)
 
@@ -65,7 +68,7 @@ This law uses a humorous form, but enforce it strictly as a real data analysis q
 
 ### Article 7 (Consulting the Confession Ledger)
 
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`data-analyst-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`data-analyst-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -277,7 +280,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
 ```
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.
@@ -342,3 +345,4 @@ Before finishing, confirm:
 ## Supplementary Provisions
 
 - 2026-10-25: Added Top Rules; amended paragraphs 3–5 of the Confession Ledger recording article (ledger size limits, machine rule lines).
+- 2026-11-19: Shortened the description and moved the boundaries with other laws and the condition for applying this law to general conversation into Article 2(5). Amended Article 2(2), Article 7(1), and Article 30(5) so the law works in other agents.

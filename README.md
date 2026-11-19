@@ -14,6 +14,7 @@
   <a href="https://github.com/PixelGrove/ai-lawbook/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/PixelGrove/ai-lawbook/test.yml?style=flat-square&label=tests&labelColor=15171e" alt="Tests"></a>
   <img src="https://img.shields.io/badge/laws-12_roles_+_answers_×_2_languages-f2c14e?style=flat-square&labelColor=15171e" alt="12 roles + answers × 2 languages">
   <img src="https://img.shields.io/badge/Claude_Code-plugin-f2c14e?style=flat-square&labelColor=15171e" alt="Claude Code plugin">
+  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-compatible-f2c14e?style=flat-square&labelColor=15171e" alt="Agent Skills compatible"></a>
   <a href="#license"><img src="https://img.shields.io/badge/license-MIT_+_Commons_Clause-f2c14e?style=flat-square&labelColor=15171e" alt="MIT + Commons Clause"></a>
 </p>
 
@@ -194,17 +195,56 @@ Subagents (Task subagents, workflow agents) do not inherit what SessionStart inj
 hook injects the same laws and ledger into every subagent as well — silently, without a status message per
 spawn, within 6,000 characters.
 
-### Codex and other Agent Skills tools
+### Codex, Cursor, Gemini CLI, and other agents
 
-Every law is a plain [Agent Skills](https://agentskills.io) folder with a Codex `agents/openai.yaml`.
-Copy the ones you want:
+Every law is a skill folder that follows the open [Agent Skills](https://agentskills.io) specification. The front
+matter uses spec fields only (`name`, `description`, `license`, `compatibility`), and each law ships a Codex
+`agents/openai.yaml`. Any agent that supports Agent Skills can use them.
+
+The easiest way is the [skills CLI](https://skills.sh). It finds the agents you have installed (Codex, Cursor,
+Gemini CLI, GitHub Copilot, OpenCode, and more) and lets you pick. It needs Node.js 22.20+ and git.
+
+```bash
+npx skills add PixelGrove/ai-lawbook/plugins/ai-lawbook-en
+```
+
+```bash
+npx skills add PixelGrove/ai-lawbook/plugins/archify
+```
+
+- The first line installs the 14 English-edition skills; the second installs archify, the diagram tool the Answer
+  AI Law uses. For the Korean edition, end the path with `ai-lawbook` instead.
+- Add `--skill developer-ai-law --skill answer-ai-law` to install only some laws, or `--list` to preview. Pick target
+  agents with `-a codex -a cursor`, and install for your whole user account with `-g`.
+- Install only one edition. Both editions use the same skill names, so installing the other edition in the same place
+  replaces the same-name skills. Without a path, `npx skills add PixelGrove/ai-lawbook` lists the Korean edition and
+  archify and skips the English edition.
+
+You can also copy the folders yourself. `~/.agents/skills/` is the user skill folder that Codex, Cursor, Gemini CLI,
+GitHub Copilot CLI, OpenCode, Amp, and others read. Each agent's own installer works too, such as Gemini CLI's
+`gemini skills install`, Codex's `$skill-installer`, or Kiro's import from a repository; point it at one skill
+folder rather than the repository root (for example `plugins/ai-lawbook-en/skills/developer-ai-law`; Gemini CLI
+takes it as `--path`).
 
 ```bash
 git clone https://github.com/PixelGrove/ai-lawbook
-cp -R ai-lawbook/plugins/ai-lawbook-en/skills/developer-ai-law ~/.codex/skills/
+mkdir -p ~/.agents/skills && cp -R ai-lawbook/plugins/ai-lawbook-en/skills/* ~/.agents/skills/
+cp -R ai-lawbook/plugins/archify/skills/archify ~/.agents/skills/
 ```
 
-Without the hook, each law still tells the agent to read and write the Confession Ledger itself.
+**What changes outside Claude Code.** The hooks ship only in the Claude Code plugin, so the enforcement roster,
+automatic Confession Ledger injection, and guard rule lines do not run. A law applies when the task matches its
+description or when you call it directly, as in `$developer-ai-law` (Codex) or `/developer-ai-law`. Each law still
+tells the agent to read and write the ledger itself (`~/.claude/ai-lawbook/confessions.md`); a sandbox that blocks
+writes outside the workspace may ask for approval.
+
+To apply a law all the time, add a line to the instruction file your agent always reads (`AGENTS.md`, a Cursor rule
+with `alwaysApply: true`, `GEMINI.md`, and so on). The agent follows the line; it is not enforced the way the Claude
+Code hooks are.
+
+```markdown
+In this repository, follow the developer-ai-law skill for every code change, and the answer-ai-law skill for every reply.
+```
 
 ## How it works
 

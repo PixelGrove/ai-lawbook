@@ -14,6 +14,7 @@
   <a href="https://github.com/PixelGrove/ai-lawbook/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/PixelGrove/ai-lawbook/test.yml?style=flat-square&label=tests&labelColor=15171e" alt="Tests"></a>
   <img src="https://img.shields.io/badge/법-12개_직무_+_답변_×_한·영-f2c14e?style=flat-square&labelColor=15171e" alt="12개 직무 + 답변 × 한·영">
   <img src="https://img.shields.io/badge/Claude_Code-plugin-f2c14e?style=flat-square&labelColor=15171e" alt="Claude Code plugin">
+  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-compatible-f2c14e?style=flat-square&labelColor=15171e" alt="Agent Skills compatible"></a>
   <a href="#라이선스"><img src="https://img.shields.io/badge/license-MIT_+_Commons_Clause-f2c14e?style=flat-square&labelColor=15171e" alt="MIT + Commons Clause"></a>
 </p>
 
@@ -188,16 +189,52 @@ echo "developer-ai-law, answer-ai-law" >> ~/.claude/ai-lawbook/enabled-laws
 그래서 SubagentStart 훅이 하위 에이전트마다 같은 법과 반성문 장부를 다시 넣습니다. 하위 에이전트마다
 상태 메시지를 띄우지는 않으며, 상한은 6,000자입니다.
 
-### Codex 등 다른 Agent Skills 도구
+### Codex·Cursor·Gemini CLI 등 다른 에이전트
 
-모든 법은 평범한 [Agent Skills](https://agentskills.io) 폴더이고, Codex용 `agents/openai.yaml` 도 들어 있습니다.
+모든 법은 [Agent Skills](https://agentskills.io) 공개 규격을 따르는 스킬 폴더입니다. 프런트매터에는 규격 필드
+(`name`, `description`, `license`, `compatibility`)만 쓰고, Codex용 `agents/openai.yaml` 도 들어 있습니다.
+그래서 Agent Skills 를 지원하는 에이전트라면 어디서나 쓸 수 있습니다.
+
+가장 쉬운 방법은 [skills CLI](https://skills.sh)입니다. 설치된 에이전트(Codex, Cursor, Gemini CLI, GitHub Copilot,
+OpenCode 등)를 찾아 보여 주고, 넣을 곳을 고르게 해 줍니다. Node.js 22.20 이상과 git 이 필요합니다.
+
+```bash
+npx skills add PixelGrove/ai-lawbook/plugins/ai-lawbook
+```
+
+```bash
+npx skills add PixelGrove/ai-lawbook/plugins/archify
+```
+
+- 첫 줄은 한국어판 14개, 둘째 줄은 답변 AI법이 구조도를 그릴 때 쓰는 archify 입니다. 영어판은 경로 끝을
+  `ai-lawbook-en` 으로 바꾸세요.
+- 일부 법만 넣으려면 `--skill developer-ai-law --skill answer-ai-law` 를 붙이고, 넣기 전에 목록만 보려면 `--list` 를
+  붙입니다. 대상 에이전트는 `-a codex -a cursor` 처럼, 사용자 전체 설치는 `-g` 로 정합니다.
+- 한 판만 설치하세요. 두 판은 스킬 이름이 같아서, 같은 곳에 다른 판을 설치하면 같은 이름의 스킬이 그 판으로
+  바뀝니다. 경로 없이 `npx skills add PixelGrove/ai-lawbook` 를 쓰면 한국어판과 archify 가 나오고 영어판은 빠집니다.
+
+직접 복사해도 됩니다. `~/.agents/skills/` 는 Codex, Cursor, Gemini CLI, GitHub Copilot CLI, OpenCode, Amp 등이
+함께 읽는 사용자 스킬 폴더입니다. Gemini CLI 의 `gemini skills install`, Codex 의 `$skill-installer`, Kiro 의
+저장소 가져오기처럼 에이전트마다 있는 설치 기능을 써도 됩니다. 이때는 저장소 루트가 아니라 스킬 폴더 하나를
+가리키세요(예: `plugins/ai-lawbook/skills/developer-ai-law`, Gemini CLI 는 `--path` 로).
 
 ```bash
 git clone https://github.com/PixelGrove/ai-lawbook
-cp -R ai-lawbook/plugins/ai-lawbook/skills/developer-ai-law ~/.codex/skills/
+mkdir -p ~/.agents/skills && cp -R ai-lawbook/plugins/ai-lawbook/skills/* ~/.agents/skills/
+cp -R ai-lawbook/plugins/archify/skills/archify ~/.agents/skills/
 ```
 
-훅이 없어도 각 법이 AI에게 반성문 장부를 직접 읽고 쓰라고 지시합니다.
+**Claude Code 밖에서 달라지는 점.** 훅은 Claude Code 플러그인에만 들어 있습니다. 그래서 시행 명부로 세션마다
+강제 적용하기, 반성문 장부 자동 주입, guard 규칙 줄 집행은 동작하지 않습니다. 법은 하는 작업이 설명과 맞을 때
+불려 오거나, `$developer-ai-law`(Codex)나 `/developer-ai-law` 처럼 직접 부를 때 적용됩니다. 장부는 각 법이 AI에게 직접 읽고 쓰라고
+지시합니다(`~/.claude/ai-lawbook/confessions.md`). 작업 폴더 밖 쓰기를 막는 샌드박스에서는 승인이 필요할 수 있습니다.
+
+늘 적용하고 싶으면 그 에이전트가 항상 읽는 지침 파일(`AGENTS.md`, `alwaysApply: true` 를 단 Cursor 규칙, `GEMINI.md` 등)에
+한 줄을 넣으세요. 에이전트가 이 줄을 따르는 방식이라 Claude Code 훅처럼 강제되지는 않습니다.
+
+```markdown
+이 저장소에서 코드를 바꾸는 작업은 developer-ai-law 스킬을 따른다. 사용자에게 보내는 답변은 answer-ai-law 를 따른다.
+```
 
 ## 동작 방식
 

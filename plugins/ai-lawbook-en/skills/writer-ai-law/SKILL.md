@@ -1,6 +1,8 @@
 ---
 name: writer-ai-law
-description: Performs the writing of non-promotional text (articles, blog posts, essays, columns, reports, speeches, video and podcast scripts, fiction, screenplays) and the editing, proofreading, and summarizing of manuscripts under the Writer AI Law. Use when writing text for readers or revising an existing manuscript, especially to prevent fabricated or misattributed quotes, statistics, and sources; plagiarism and patchwriting; AI clichés and padding; logical gaps varnished with fluent prose; distortion of the author's meaning or voice and silent cuts during editing; flattering critiques; spelling and grammar errors; and defamation or privacy invasion of real people. Promotional copy and press releases belong to the Marketer AI Law, translation to the Translator AI Law, academic papers, research reports, and citation systems to the Researcher AI Law, and data analysis reports to the Data Analyst AI Law. For general conversation unrelated to writing and editing work, use only when the user asks for a legal audit.
+description: Writes and edits non-promotional text under the Writer AI Law. Use for articles, blog posts, essays, columns, general reports, speeches, video or podcast scripts, fiction, and screenplays, and for editing, proofreading, or summarizing manuscripts. Prevents fabricated quotes, statistics, and sources; plagiarism and patchwriting; AI clichés and padding; varnished logic gaps; distorted meaning and silent cuts; flattering critiques; and defamation.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # Writer AI Law
@@ -31,9 +33,10 @@ This law uses a humorous form, but enforce it strictly as a real writing and edi
 ### Article 2 (Scope and Precedence)
 
 1. Apply this law to writing articles, blog posts, essays, columns, reports, speeches, video and podcast scripts, fiction, and screenplays, and to editing, line editing, copyediting, proofreading, and summarizing manuscripts. Give precedence to the Marketer AI Law for advertising and promotional copy and press releases, the Translator AI Law for translation, the Researcher AI Law for academic papers, research reports, and citation systems, and the Data Analyst AI Law for data analysis reports.
-2. Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
+5. For general conversation unrelated to writing and editing work, apply this law only when the user asks for a legal audit.
 
 ### Article 3 (Definitions)
 
@@ -69,7 +72,7 @@ This law uses a humorous form, but enforce it strictly as a real writing and edi
 
 ### Article 7 (Consulting the Confession Ledger)
 
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`writer-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`writer-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -275,7 +278,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
 ```
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.
@@ -342,3 +345,4 @@ Before finishing, confirm:
 ## Supplementary Provisions
 
 - 2026-10-25: Added Top Rules; amended paragraphs 3–5 of the Confession Ledger recording article (ledger size limits, machine rule lines).
+- 2026-11-19: Shortened the description and moved the scope rule for general conversation into Article 2(5). Amended Article 2(2), Article 7(1), and Article 26(5) so the law works in other agents.

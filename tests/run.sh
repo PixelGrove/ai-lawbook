@@ -401,6 +401,26 @@ for name in $ko_names; do
     # Count UTF-8 characters, not bytes, whatever the locale: drop continuation bytes (0x80-0xBF).
     chars="$(printf "%s" "$desc" | LC_ALL=C tr -d '\200-\277' | wc -c | tr -d ' ')"
     check "$tag: description present, <= 1024 chars ($chars)" '[ -n "$desc" ] && [ "$chars" -le 1024 ]'
+    # Agent Skills specification (agentskills.io): spec fields only, the name pattern, and YAML-safe one-line
+    # descriptions. Short descriptions also keep the plugin inside skill-listing budgets (Claude Code drops
+    # descriptions once all skills together exceed a listing budget of about 1% of the context window).
+    fm_keys="$(awk 'NR == 1 {next} /^---$/ {exit} /^[A-Za-z0-9_-]+:/ {sub(/:.*/, ""); print}' "$f" | sort -u | tr '\n' ' ')"
+    check "$tag: front matter uses Agent Skills fields only ($fm_keys)" \
+      '! printf "%s\n" $fm_keys | grep -qvxE "name|description|license|compatibility|metadata|allowed-tools"'
+    check "$tag: name follows the Agent Skills pattern" \
+      'printf "%s" "$fm_name" | grep -qE "^[a-z0-9]+(-[a-z0-9]+)*$" && [ "${#fm_name}" -le 64 ]'
+    check "$tag: description is YAML-safe (no ': ', ' #', < or >)" \
+      '! printf "%s" "$desc" | grep -qE ": | #|[<>]"'
+    limit="$([ "$side" = "$KO" ] && echo 300 || echo 450)"
+    check "$tag: description fits the listing budget ($chars <= $limit)" '[ "$chars" -le "$limit" ]'
+    comp="$(awk 'NR > 1 && /^---$/ {exit} /^compatibility:/ {sub(/^compatibility: */, ""); print}' "$f")"
+    comp_chars="$(printf "%s" "$comp" | LC_ALL=C tr -d '\200-\277' | wc -c | tr -d ' ')"
+    check "$tag: compatibility present, <= 500 chars ($comp_chars)" '[ "$comp_chars" -ge 3 ] && [ "$comp_chars" -le 500 ]'
+    oy="$side/skills/$name/agents/openai.yaml"
+    sd="$(sed -n 's/^  short_description: "\(.*\)"$/\1/p' "$oy" 2>/dev/null)"
+    sd_chars="$(printf "%s" "$sd" | LC_ALL=C tr -d '\200-\277' | wc -c | tr -d ' ')"
+    check "$tag: openai.yaml short_description 1-64 chars ($sd_chars)" '[ "$sd_chars" -ge 1 ] && [ "$sd_chars" -le 64 ]'
+    check "$tag: openai.yaml default_prompt names \$$name" 'grep -q "default_prompt: \".*\\\$$name" "$oy"'
     check "$tag: agents/openai.yaml present" '[ -r "$side/skills/$name/agents/openai.yaml" ]'
     [ "$name" = ai-lawmaker ] && continue
     check "$tag: references the confession ledger" 'grep -q "~/.claude/ai-lawbook/confessions.md" "$f"'

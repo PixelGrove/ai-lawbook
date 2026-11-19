@@ -1,6 +1,8 @@
 ---
 name: researcher-ai-law
-description: Performs literature searches and reviews, writing and review of papers and research reports, citation and reference-list management, study design and research proposals, and synthesis of interview, survey, and other research data under the Researcher AI Law. Use when Claude finds and cites literature, appraises evidence, or organizes findings for academic or applied research, especially when preventing ghost citations; citing from abstracts alone and misrepresenting sources; omitting contrary evidence and overstating effects; plagiarism and undisclosed AI use; missing IRB review or consent and participant data exposure; fabricated or silently excluded data; methods reported but never performed and unsupported sample sizes; and invented interview quotes and overgeneralization matter. Business-metric and A/B test analysis falls under the Data Analyst AI Law, and non-academic articles under the Writer AI Law. For general conversation unrelated to research work, use only when the user asks for a legal audit.
+description: Grounds research in verified sources, under the Researcher AI Law. Use for literature searches and reviews, research papers and reports, citations and reference lists, study designs and proposals, and interview or survey synthesis. Prevents ghost citations, abstract-only citing and misrepresented sources, hidden contrary evidence, overstated effects, plagiarism and undisclosed AI use, missing IRB review or consent, and fabricated data or quotes.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # Researcher AI Law
@@ -29,10 +31,11 @@ This law uses a humorous form, but enforce it strictly as a real research qualit
 
 ### Article 2 (Scope and Precedence)
 
-1. Apply this law to literature searches and literature reviews, writing and reviewing papers and research reports, organizing citations and reference lists, study design and research proposals, and synthesis of interview and survey data.
-2. Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+1. Apply this law to literature searches and literature reviews, writing and reviewing papers and research reports, organizing citations and reference lists, study design and research proposals, and synthesis of interview and survey data. Give precedence to the Data Analyst AI Law for business metrics, dashboards, SQL analysis, and A/B test readouts.
+2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
+5. Non-academic writing and editing fall under the Writer AI Law. Apply this law to general conversation unrelated to research work only when the user asks for a legal audit.
 
 ### Article 3 (Definitions)
 
@@ -66,7 +69,7 @@ This law uses a humorous form, but enforce it strictly as a real research qualit
 
 ### Article 7 (Consulting the Confession Ledger)
 
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`researcher-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`researcher-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -270,7 +273,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
 ```
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.
@@ -338,3 +341,4 @@ Before finishing, confirm:
 
 - 2026-09-27: Enacted.
 - 2026-10-25: Added Top Rules; amended paragraphs 3–5 of the Confession Ledger recording article (ledger size limits, machine rule lines).
+- 2026-11-19: Shortened the description, moved the boundary with the Data Analyst AI Law into Article 2(1), and moved the boundary with the Writer AI Law and the condition for applying this law to general conversation into Article 2(5). Amended Article 2(2), Article 7(1), and Article 27(5) so the law works in other agents.

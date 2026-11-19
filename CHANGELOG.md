@@ -3,6 +3,32 @@
 판마다 무엇이 바뀌었는지 적습니다. 날짜는 한국 시간(KST, UTC+9) 기준 배포일입니다. 각 법의 부칙 날짜는 조문을
 확정한 날이라 배포일과 하루쯤 다를 수 있습니다.
 
+## 1.5.0 — 2026-11-19
+
+### Agent Skills 규격과 다른 에이전트 · Agent Skills and other agents
+- 모든 법의 프런트매터를 [Agent Skills](https://agentskills.io) 규격 필드만으로 쓰고 `license`·`compatibility` 를
+  넣었습니다. `compatibility` 에는 세션마다 자동 적용과 guard 집행이 Claude Code 플러그인에서만 동작한다고 적었습니다.
+  Every law now uses Agent Skills spec fields only, with `license` and `compatibility`.
+- README 에 Codex·Cursor·Gemini CLI·GitHub Copilot 같은 다른 에이전트의 설치 안내(`npx skills add`,
+  `~/.agents/skills/` 복사)와, 늘 적용하는 `AGENTS.md` 한 줄 예시를 넣었습니다.
+- 법 본문을 다른 에이전트에서도 맞게 고쳤습니다. 프로젝트 지침 파일을 `CLAUDE.md`·`AGENTS.md` 등으로 넓히고,
+  장부를 읽거나 쓸 수 없으면 사용자에게 알리게 하고, guard 규칙 줄은 Claude Code 플러그인 훅이 있을 때만
+  집행된다고 밝혔습니다. 답변 AI법의 위젯·Artifact·archify·입력창 명령 규칙과 입법 스킬의 저장 위치 안내도 맞췄습니다.
+- Codex 용 `agents/openai.yaml`: 영어판 짧은 설명을 64자 이하로, 한국어판 기본 프롬프트를 한국어로 바꿨습니다.
+
+### 스킬 설명 · Skill descriptions
+- 28개 스킬의 description 을 한국어 300자·영어 450자 이하로 맞췄습니다(합계 한국어 5,949→3,680자,
+  영어 13,354→6,223자). Claude Code 는 스킬 목록에 문자 예산(모델 컨텍스트 창의 1%)을 두고, 넘치면 덜 쓰는
+  스킬부터 설명을 빼고 이름만 보여 줍니다. 그래서 인사·영업·번역가·작가 AI법이 설명 없이 표시되던 문제를 줄였습니다.
+  설명에서 뺀 다른 법과의 경계와 일반 대화 적용 조건은 각 법 제2조에 두었습니다. 경계가 이미 제1항에 있으면 그대로
+  두고, 없던 것은 제1항이나 제5항에 넣었습니다.
+- 영어판 입법 스킬 설명의 `<role>` 을 바꿨습니다. 설명 속 꺾쇠 괄호는 일부 플랫폼에서 XML 태그로 취급돼 거부되거나
+  이스케이프됩니다.
+
+### 테스트 · Tests
+- Agent Skills 규격 검사(허용 필드, 이름 형식, YAML 안전성, 설명 길이, `compatibility`, `openai.yaml`)를 더해
+  검사가 568개가 됐습니다.
+
 ## 1.4.0 — 2026-11-18
 
 ### 라이선스 · License

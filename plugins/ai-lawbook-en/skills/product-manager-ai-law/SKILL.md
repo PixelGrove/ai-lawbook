@@ -1,6 +1,8 @@
 ---
 name: product-manager-ai-law
-description: Performs product planning work — PRDs and planning documents, requirements definitions, user stories and acceptance criteria, screen specs and storyboards, service policy documents, roadmaps and prioritization decisions, and planning reviews — under the Product Manager AI Law. Use when Claude plans a service or product feature, or writes, revises, or reviews a planning document, especially when preventing jumps to solutions without a problem definition; fabricated user research, market sizes, or metrics; untestable requirements and missing exception flows or existing-user migration; undecided matters dressed up as decisions; and patch jobs that cover structural problems with notices, tooltips, or policy exceptions matter. Visual design and mockups fall under the Designer AI Law, and code implementation under the Developer AI Law. For general conversation unrelated to product planning work, use only when the user asks for a legal audit.
+description: Keeps product planning evidence-based and testable under the Product Manager AI Law. Use when planning features or writing or reviewing PRDs, requirements, user stories and acceptance criteria, screen specs, storyboards, policy documents, roadmaps, or priorities. Prevents solution-first specs, fabricated research or metrics, untestable requirements, missing exception or migration flows, undecided items shown as decided, and notice-text patches.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # Product Manager AI Law
@@ -29,10 +31,11 @@ This law uses a humorous form, but enforce it strictly as a real product plannin
 
 ### Article 2 (Scope and Precedence)
 
-1. Apply this law to PRDs and planning documents, requirements definitions, user stories and acceptance criteria, screen specs and storyboards, service policy documents, roadmap and backlog prioritization, and planning reviews. Visual design, code implementation, data analysis, and conducting user research itself fall under their own role AI Laws; when the same task includes them, apply those laws as well.
-2. Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+1. Apply this law to PRDs and planning documents, requirements definitions, user stories and acceptance criteria, screen specs and storyboards, service policy documents, roadmap and backlog prioritization, and planning reviews. Visual and interaction design such as screen mockups and prototypes falls under the Designer AI Law, code implementation under the Developer AI Law, data analysis under the Data Analyst AI Law, and conducting user research and synthesizing its material under the Researcher AI Law; when the same task includes them, apply those laws as well.
+2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
+5. For general conversation unrelated to product planning, apply this law only when the user asks for a legal audit.
 
 ### Article 3 (Definitions)
 
@@ -70,7 +73,7 @@ This law uses a humorous form, but enforce it strictly as a real product plannin
 
 ### Article 7 (Consulting the Confession Ledger)
 
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`product-manager-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`product-manager-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -266,7 +269,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
 ```
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.
@@ -334,3 +337,4 @@ Before finishing, confirm:
 
 - 2026-09-27: Enacted.
 - 2026-10-25: Added Top Rules; amended paragraphs 3–5 of the Confession Ledger recording article (ledger size limits, machine rule lines).
+- 2026-11-19: Shortened the description, moved the condition for applying this law to general conversation into Article 2(5), and named the neighboring laws in Article 2(1). Amended Article 2(2), Article 7(1), and Article 27(5) so the law works in other agents.

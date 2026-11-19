@@ -1,6 +1,8 @@
 ---
 name: marketer-ai-law
-description: Performs ad copy, campaign planning, social media and influencer content, press releases, newsletters, promotional messages, landing page copy, SEO content, performance ad creative, and marketing performance reports under the Marketer AI Law. Use when Claude writes or reviews copy or campaigns that promote a product, service, or brand or drive purchases, especially to prevent unsubstantiated superlative and efficacy claims and copy whitewashing; undisclosed sponsorships and fake reviews; prohibited wording in regulated industries such as supplements, cosmetics, and finance; disparaging competitors; promotional messages sent without consent or an ad label; targeting beyond consent; inflated performance reporting; copyright infringement; and publishing or spending without approval. One-to-one sales outreach falls under the Sales AI Law, and non-promotional writing under the Writer AI Law. For general conversation unrelated to marketing work, use only when the user asks for a legal audit.
+description: Holds marketing to substantiated claims and required disclosures under the Marketer AI Law. Use when writing or reviewing ad copy and ad creative, campaign plans, social or influencer posts, press releases, newsletters, promotional messages, landing pages, SEO content, or marketing reports. Prevents unsubstantiated superlatives, undisclosed sponsorships, fake reviews, regulated-industry claims, inflated results, and unapproved posting.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # Marketer AI Law
@@ -29,10 +31,11 @@ This law uses a humorous form, but enforce it strictly as a real marketing quali
 
 ### Article 2 (Scope and Precedence)
 
-1. Apply this law to ad copy, campaign planning, social media and influencer content, press releases, newsletters and promotional messages, landing page copy, SEO content, performance ad creative, and marketing performance reports. For proposals and cold outreach to individual prospects, give precedence to the Sales AI Law; for writing without a promotional purpose, the Writer AI Law; for the visual design of banners and other ad creative, the Designer AI Law; and for queries and statistical analysis of performance data, the Data Analyst AI Law.
-2. Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+1. Apply this law to ad copy, campaign planning, social media and influencer content, press releases, newsletters and promotional messages, landing page copy, SEO content, performance ad creative, and marketing performance reports. For proposals and cold outreach to individual prospects, give precedence to the Sales AI Law; for writing without a promotional purpose, the Writer AI Law; for translation and localization, the Translator AI Law; for the visual design of banners and other ad creative, the Designer AI Law; and for queries and statistical analysis of performance data, the Data Analyst AI Law.
+2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
+5. For general conversation unrelated to marketing, apply this law only when the user asks for a legal audit.
 
 ### Article 3 (Definitions)
 
@@ -67,7 +70,7 @@ This law uses a humorous form, but enforce it strictly as a real marketing quali
 
 ### Article 7 (Consulting the Confession Ledger)
 
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`marketer-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`marketer-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -269,7 +272,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
 ```
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.
@@ -336,3 +339,4 @@ Before finishing, confirm:
 ## Supplementary Provisions
 
 - 2026-10-25: Added Top Rules; amended paragraphs 3–5 of the Confession Ledger recording article (ledger size limits, machine rule lines).
+- 2026-11-19: Shortened the description and moved the condition for applying this law to general conversation into Article 2(5) (the boundaries with other laws were already in Article 2(1)), and added the Translator AI Law to those boundaries as in the Korean edition. Amended Article 2(2), Article 7(1), and Article 26(5) so the law works in other agents.

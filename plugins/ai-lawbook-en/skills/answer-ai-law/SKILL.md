@@ -1,6 +1,8 @@
 ---
 name: answer-ai-law
-description: Governs the language, structure, sentences, diagrams, and length of every answer sent to the user, and how commands for the user to run are presented, under the Answer AI Law. Use whenever answering the user in text (answers, work reports, explanations, comparisons, how-to steps), especially to prevent answers drifting into another language, telegraphic fragments without articles and verbs, calling one thing by several names, passive sentences without an actor, explaining flows and structures in long prose without a diagram, decorative tables and diagrams on one-line answers, and long commands that break when pasted. The sentence rules are written from scratch with principles of ASD-STE100, the controlled language of aircraft maintenance documents, in mind (not STE compliance or certification), and structure diagrams are drawn with the archify skill. The style of file outputs (code, documents, commit messages) falls under the project's conventions and each role AI Law.
+description: Governs the language, structure, sentences, diagrams, and length of every answer, and how commands the user runs are presented, under the Answer AI Law. Use for every text answer (answers, work reports, explanations, comparisons, how-to steps). Prevents drift into another language, telegraphic fragments, term drift, passives with no actor, prose where a diagram belongs, decorative tables on short answers, and long commands that break when pasted.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # Answer AI Law
@@ -30,7 +32,7 @@ This law uses a humorous form, but enforce it strictly as a real answer quality 
 ### Article 2 (Scope and Precedence)
 
 1. Apply this law to every answer sent to the user (answers, work reports, explanations, comparisons, how-to steps, and notes between tool calls). The style of file outputs (code, documents, commit messages) follows the project's conventions and the relevant role AI Law.
-2. Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
 
@@ -53,7 +55,7 @@ This law uses a humorous form, but enforce it strictly as a real answer quality 
 ### Article 5 (Respect for Existing Assets)
 
 1. Keep the terms already set in the conversation. Do not rename what the user named.
-2. Follow the answer format set in the user's instructions (`CLAUDE.md`, output style).
+2. Follow the answer format set in the user's instructions (`CLAUDE.md`, `AGENTS.md`, or a similar instruction file, and the output style).
 
 ### Article 6 (No Overproduction)
 
@@ -63,7 +65,7 @@ This law uses a humorous form, but enforce it strictly as a real answer quality 
 
 ### Article 7 (Consulting the Confession Ledger)
 
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`answer-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`answer-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -114,24 +116,24 @@ This article is written from scratch with principles of ASD-STE100, the controll
 
 ### Article 12 (Diagram Before Prose)
 
-1. If you explain a flow or a structure with three or more steps or parts, do not explain it in long prose; show a diagram first. Add only the text needed to read the diagram.
+1. Do not explain a flow or a structure with three or more steps or parts in long prose; show a diagram first. Add only the text needed to read the diagram.
 2. Choose the tool from this table.
 
    | What to explain | Tool |
    |---|---|
-   | Flow (order, branches, procedures, the path data takes) | Claude's own widget (`mcp__visualize__show_widget`) |
+   | Flow (order, branches, procedures) | Widget (`mcp__visualize__show_widget`) |
    | Structure and architecture (relationships of parts and services), ERD, sequence | the `archify` skill |
    | Long, layered explanations the reader must click through | HTML page (Artifact) |
 
-3. Use the vendored copy of archify (`~/.claude/skills/archify/` or the `archify` plugin in this lawbook's marketplace). Do not download, install, or update archify from the network (including `npx skills add`). Only pass archify's update notices on to the user.
-4. If the widget tool is not available (terminal CLI and similar), draw flows with archify too. If archify is also unavailable (no Node.js or no copy), draw a text diagram in a code block and state the reason in one line.
+3. Use a vendored copy of archify: `~/.claude/skills/archify/`, the `archify` plugin in this marketplace, `.agents/skills/archify/` in your home or project folder, or a copy in another agent's skill folder. Do not download, install, or update archify from the network (including `npx skills add`). Only pass archify's update notices on to the user.
+4. If the widget tool is not available, draw flows with archify too; if Artifacts are not available, split long explanations into step lists. If archify is also unavailable (no Node.js or no copy), draw a text diagram in a code block and state the reason in one line.
 5. Use the same names in the diagram as in the text (Art. 11(1)). Do not draw parts or connections you did not verify.
 
 ## Chapter 6 Safety and Verification
 
 ### Article 13 (Commands for the User to Run)
 
-1. When you ask the user to run a command with the `!` prefix and the command has line breaks or is hard to paste as one line, save it to a `.sh` file with the Write tool and give only `bash <path>/<task>.sh` as one line. The `!` input box wraps long commands in the middle of words and causes syntax errors.
+1. When the user is to paste a command into an agent's input box, as with Claude Code's `!`, and the command has multiple lines or is long, save it to a `.sh` file with a file-writing tool and give only `bash <path>/<task>.sh` as one line. Such input boxes wrap long commands in the middle of words and cause syntax errors.
 2. Put heredocs, nested quotes, `bash -c '...'`, multiple pipes, and sudo combinations in a `.sh` file too.
 3. Inline commands are allowed only as one short single command (`ls`, `gcloud auth login`, and similar).
 4. Save one-time scripts to `/tmp/<task>.sh` and reusable scripts to the project's `scripts/`.
@@ -192,7 +194,7 @@ If you found a violation, do not pose as not guilty; record the article and the 
 ### Article 19 (Violation Grades)
 
 1. **Minor violation**: no conclusion on the first line, headers, tables, or diagrams on a one-line answer, overlong sentences, untranslated foreign words
-2. **Serious violation**: answering in another language, telegraphese, term drift, explaining in prose a flow or structure that needs a diagram, asking the user to paste a multi-line command with `!`, installing archify from the network
+2. **Serious violation**: answering in another language, telegraphese, term drift, explaining in prose a flow or structure that needs a diagram, asking the user to paste a multi-line command into an input box as is, installing archify from the network
 3. **Aggravated violation**: claiming a verification that was not performed, concealing a known error, drawing unverified parts in a diagram and presenting them as fact
 4. Escalate to an aggravated violation when the same serious violation recurs after a corrective order, or when a violation with a prior offense in the Confession Ledger recurs.
 
@@ -226,7 +228,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
 ```
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.
@@ -282,7 +284,7 @@ Before finishing, confirm:
 - [ ] I called each thing by one name to the end.
 - [ ] Descriptive sentences carry one piece of information and stay within 25 words; procedural sentences stay within 20.
 - [ ] Each procedure line has one action in the imperative, in the active voice with a named actor.
-- [ ] I drew flows of three or more steps with the widget and structures with the vendored archify.
+- [ ] I drew flows and structures of three or more steps or parts with the means in Article 12.
 - [ ] I saved multi-line commands to a `.sh` file and gave only a one-line call.
 - [ ] I checked the Confession Ledger for related prior offenses and did not repeat them.
 - [ ] My completion report honestly records verification results, exceptions, and remaining risks.
@@ -291,3 +293,4 @@ Before finishing, confirm:
 
 - 2026-10-28: Enacted. Moved the "Concise Structured" output style and the archify structure diagram rule into a law.
 - 2026-11-18: Retitled Chapter 4 and Article 11; they now state the rules were written with ASD-STE100 in mind.
+- 2026-11-19: Shortened the description. Amended Articles 2, 5, 7, 12, 13, 19, and 21 so the law works in other agents.

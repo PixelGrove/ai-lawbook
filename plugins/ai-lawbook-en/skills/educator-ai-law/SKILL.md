@@ -1,6 +1,8 @@
 ---
 name: educator-ai-law
-description: Performs the writing and review of lesson plans; textbooks, worksheets, and lecture slides; assessment items and answer keys; rubrics, grading, and feedback; school record comments; parent notices; tutoring for learners; and corporate or institutional training courses under the Educator AI Law. Use when Claude creates or edits teaching or assessment materials for K-12, higher education, or workplace training, grades student work, answers a learner's assignment question, or audits educational materials, especially to prevent answer keys it never solved itself and items with multiple correct answers, misalignment with standards or learner level, grading without answer evidence, handing final answers to learners trying to learn, leaks of student personal data or unreleased test items, and explanatory whitewash that covers task design flaws. Employee evaluations and HR decisions fall under the HR AI Law. For general conversation unrelated to education work, use only when the user asks for a legal audit.
+description: Writes, reviews, and audits lessons and assessments under the Educator AI Law. Use for lesson plans, worksheets, slides, tests, answer keys, rubrics, grading, feedback, school record comments, parent notices, tutoring, homework help, and training courses. Prevents unsolved or wrong answer keys, multi-answer items, standards or level mismatch, evidence-free grading, giving away answers, student data or test leaks, and whitewashed task flaws.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # Educator AI Law
@@ -30,10 +32,11 @@ This law uses a humorous form, but enforce it strictly as a real education quali
 
 ### Article 2 (Scope and Precedence)
 
-1. Apply this law to lesson plans and session plans; textbooks, worksheets, slides, and lecture notes; assessment items with answer keys and explanations; rubrics, grading, and feedback; school record comments (e.g. report card comments, Korea's school life records); parent notices and caregiver communications; tutoring in response to learner questions; and corporate or institutional training course design.
-2. Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+1. Apply this law to lesson plans and session plans; textbooks, worksheets, slides, and lecture notes; assessment items with answer keys and explanations; rubrics, grading, and feedback; school record comments (e.g. report card comments, Korea's school life records); parent notices and caregiver communications; tutoring in response to learner questions; and corporate or institutional training course design. Give precedence to the HR AI Law for hiring, performance review, promotion, and compensation materials for employees.
+2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
+5. For general conversation unrelated to education work, apply this law only when the user asks for a legal audit.
 
 ### Article 3 (Definitions)
 
@@ -69,7 +72,7 @@ This law uses a humorous form, but enforce it strictly as a real education quali
 
 ### Article 7 (Consulting the Confession Ledger)
 
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`educator-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`educator-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -258,7 +261,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
 ```
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.
@@ -325,3 +328,4 @@ Before finishing, confirm:
 ## Supplementary Provisions
 
 - 2026-10-25: Added Top Rules; amended paragraphs 3–5 of the Confession Ledger recording article (ledger size limits, machine rule lines).
+- 2026-11-19: Shortened the description, moved the boundary with the HR AI Law into Article 2(1) and the condition for applying this law to general conversation into Article 2(5). Amended Article 2(2), Article 7(1), and Article 25(5) so the law works in other agents.

@@ -1,4 +1,4 @@
 interface:
   display_name: "Data Analyst AI Law"
-  short_description: "Data analysis principles that block number fitting and join fan-out through articles and penalties"
+  short_description: "Blocks number fitting and join fan-out in data analysis"
   default_prompt: "Use $data-analyst-ai-law to do this task under the Data Analyst AI Law."

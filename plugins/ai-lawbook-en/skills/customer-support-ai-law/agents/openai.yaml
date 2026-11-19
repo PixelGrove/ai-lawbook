@@ -1,4 +1,4 @@
 interface:
   display_name: "Customer Support AI Law"
-  short_description: "Customer support principles that block unauthorized promises and patch-job responses through articles and penalties"
+  short_description: "Support rules against unauthorized promises and patch jobs"
   default_prompt: "Use $customer-support-ai-law to do this task under the Customer Support AI Law."

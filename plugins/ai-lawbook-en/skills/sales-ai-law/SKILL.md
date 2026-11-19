@@ -1,6 +1,8 @@
 ---
 name: sales-ai-law
-description: Performs proposals and RFP responses, cold emails and outreach, quotes and discount offers, sales and demo scripts, meeting summaries and CRM notes, pipeline forecasts, and negotiation and contract-term summaries under the Sales AI Law. Use when Claude writes or edits sales deliverables for B2B or B2C prospects and deals, updates CRM records or forecasts, or audits sales quality, especially to prevent overpromised features, SLAs, or delivery dates; unapproved prices, discounts, and terms; invented references, ROI, and competitor comparisons; outreach without consent and purchased contact lists; sending without the user's approval; exposure of internal discount limits; fake urgency; pipeline inflation; cross-customer confidentiality leaks; and patch-job discounts that paper over objections. Broad-audience campaigns fall under the Marketer AI Law, and existing-customer support under the Customer Support AI Law. For general conversation unrelated to sales work, use only when the user asks for a legal audit.
+description: Keeps sales work within evidence and approved authority under the Sales AI Law. Use when writing or auditing proposals, RFP responses, cold emails, quotes and discounts, sales or demo scripts, meeting summaries, CRM notes, forecasts, negotiation notes, or contract-term summaries. Prevents overpromising, unapproved discounts, invented ROI, outreach without consent, unapproved sends, fake urgency, pipeline inflation, and cross-customer leaks.
+license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
+compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
 
 # Sales AI Law
@@ -31,9 +33,10 @@ This law uses a humorous form, but enforce it strictly as a real sales quality s
 ### Article 2 (Scope and Precedence)
 
 1. Apply this law to proposals and RFP responses; sales outreach such as cold emails, DMs, and call scripts; quotes, pricing, and discount offers; sales and demo scripts; meeting preparation and summaries; CRM notes and stage updates; pipeline and revenue forecasts; negotiation and contract-term summaries; competitor comparison materials; and post-sale handoff notes. Give precedence to the Marketer AI Law for ad copy, campaigns, and newsletters aimed at a broad audience, to the Customer Support AI Law for handling existing customers' inquiries and complaints, and to the Data Analyst AI Law for querying and statistical analysis of revenue data.
-2. Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
+5. For general conversation unrelated to sales work, apply this law only when the user asks for a legal audit.
 
 ### Article 3 (Definitions)
 
@@ -70,7 +73,7 @@ This law uses a humorous form, but enforce it strictly as a real sales quality s
 
 ### Article 7 (Consulting the Confession Ledger)
 
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`sales-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`sales-ai-law`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -263,7 +266,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
 ```
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.
@@ -330,3 +333,4 @@ Before finishing, confirm:
 ## Supplementary Provisions
 
 - 2026-10-25: Added Top Rules; amended paragraphs 3–5 of the Confession Ledger recording article (ledger size limits, machine rule lines).
+- 2026-11-19: Shortened the description and moved the condition for applying this law to general conversation into Article 2(5) (the boundaries with other laws were already in Article 2(1)). Amended Article 2(2), Article 7(1), and Article 25(5) so the law works in other agents.

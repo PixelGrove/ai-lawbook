@@ -1,4 +1,4 @@
 interface:
   display_name: "Marketer AI Law"
-  short_description: "Marketing principles that block exaggerated claims, undisclosed sponsorships, and spam through articles and penalties"
+  short_description: "Marketing rules against false claims, hidden ads, and spam"
   default_prompt: "Use $marketer-ai-law to do this task under the Marketer AI Law."

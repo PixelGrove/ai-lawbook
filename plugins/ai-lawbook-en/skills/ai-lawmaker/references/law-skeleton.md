@@ -28,9 +28,15 @@ role articles a law has, so renumber them per law.
 ```yaml
 ---
 name: <name>                  # e.g. marketer-ai-law. Must match the directory name.
-description: Performs <main deliverables> under the <Law Name>. Use when <concrete trigger situations>, especially when <3–5 failures this law prevents> matter. For general conversation unrelated to <role> work, use only when the user asks for a legal audit.
+description: Performs <main deliverables> under the <Law Name>. Use when creating or reviewing <deliverables and tasks the user actually names>. Prevents <3–5 failures this law prevents>.
 ---
 ```
+
+Write `description` on one line in this order: (1) what the law does, (2) when to use it, with the deliverables and
+tasks the user actually names first, (3) the main failures it prevents, briefly. Aim for about 300 characters in Korean
+or 450 in English, and never exceed 1024. Do not use `<` or `>`, and quote the value if it contains a colon followed by
+a space or a space followed by `#`. Boundaries with other laws go at the end of Article 2(1) or in Article 2(5), and
+the limit on general conversation goes in Article 2(5), not in `description`.
 
 ## Body skeleton
 
@@ -60,9 +66,10 @@ This law uses a humorous form, but enforce it strictly as a real <role> quality 
 
 ### Article 2 (Scope and Precedence)
 1. [ROLE] List the work this law applies to.
-2. [COMMON] Give precedence to the user's explicit instructions, the project's `CLAUDE.md`, organizational policies, and existing guides.
+2. [COMMON] Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. [COMMON] When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. [COMMON] When rules conflict, state the conflict and follow the most specific higher-level instruction.
+5. [ROLE] "<A neighboring role's deliverables> fall under the <that role's Law Name>." [COMMON] "For general conversation unrelated to <role> work, apply this law only when the user asks for a legal audit."
 
 ### Article 3 (Definitions)
 [ROLE] 3–5 terms. One must define this role's version of a "patch job" (hiding a
@@ -82,7 +89,7 @@ Last paragraph [COMMON]: "Done" means not only producing the deliverable but als
 [ROLE] Do not make it bigger than requested. Choose the smallest **complete** deliverable.
 
 ### Article 7 (Consulting the Confession Ledger) [COMMON]
-1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`<name>`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses.
+1. Before starting work, check the Confession Ledger (`~/.claude/ai-lawbook/confessions.md`) for prior offenses related to this law (`<name>`). If the ledger is already injected into the session context, use it; otherwise read the file directly. If the file does not exist, there are no prior offenses. If your environment cannot read or write the ledger, tell the user.
 2. Treat violations recorded as prior offenses as the top-priority checks for this task.
 3. Repeating a violation that has a prior offense is an aggravated violation regardless of its original grade.
 
@@ -171,7 +178,7 @@ Never use deleting user data, damaging files, producing meaningless output, or w
        - Correction and prevention: <what you will do first next time — as an action>
 
 4. If a confession for the same article and the same cause already exists, do not add a new entry; update only the count and latest date on the "Repeat offenses" line. Rewrite "Cause" for this incident in at most 300 characters and move the previous account to the end of `~/.claude/ai-lawbook/confessions-archive.md`. Do not append to the prevention measure; rewrite it as a more specific sentence (at most 300 characters).
-5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line.
+5. When repeat offenses reach 3, propose to the user a new article, via `ai-lawmaker`, that prevents this violation. If a shell command pattern can catch it, also propose a `- Block: <regex>` line so the harness blocks it mechanically; for response-language or secret-output violations, propose a `- Check: korean` or `- Check: secrets` line. These rule lines are enforced mechanically only in Claude Code with the AI Lawbook plugin hooks on; in other agents they stay as records.
 6. Never write secret keys, tokens, personal data, customer names, or company secrets in the ledger. The ledger is injected into every project, so describe the situation in general terms.
 7. Create the ledger file or directory if missing. Unless the user asks, do not delete or rewrite other entries.
 8. After recording, tell the user in one line.

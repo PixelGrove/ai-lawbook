@@ -1,4 +1,4 @@
 interface:
   display_name: "Answer AI Law"
-  short_description: "Answer principles that enforce controlled sentences, tables, and diagrams in every reply"
+  short_description: "Controlled sentences, tables, and diagrams in every answer"
   default_prompt: "Use $answer-ai-law to answer under the Answer AI Law."
