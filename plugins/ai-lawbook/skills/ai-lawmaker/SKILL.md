@@ -41,6 +41,7 @@ compatibility: "Agent Skills 형식이라 다른 에이전트에서도 불러 �
    | `educator-ai-law` | 교육자 |
    | `hr-ai-law` | 인사 |
    | `sales-ai-law` | 영업 |
+   | `security-ai-law` | 보안 |
    | `answer-ai-law` | 모든 직무의 답변(언어·구조·문장·그림) |
 
 2. **사용자 제정 법**: `~/.claude/skills/<name>/SKILL.md`(모든 프로젝트) 또는
@@ -242,3 +243,4 @@ writer-ai-law, translator-ai-law
   여러 이름 적기, 대문자·BOM·CR 처리, 건너뛴 까닭 알림) 개정
 - 2026-11-19: 1.5.0 — 제2조 제5항(다른 에이전트 안내) 신설. 제6조 제1항(다른 에이전트의 기본 저장 위치)·제2항(openai.yaml 틀), 제7조 제1항(description 기준),
   제14조 제1항(플러그인 밖 안내) 개정
+- 2026-11-20: 1.6.0 — 제2조 선례 표에 보안 AI법(`security-ai-law`) 반영

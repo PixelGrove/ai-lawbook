@@ -3,6 +3,32 @@
 판마다 무엇이 바뀌었는지 적습니다. 날짜는 한국 시간(KST, UTC+9) 기준 배포일입니다. 각 법의 부칙 날짜는 조문을
 확정한 날이라 배포일과 하루쯤 다를 수 있습니다.
 
+## 1.6.0 — 2026-11-20
+
+최근 PHP·Java·nginx에서 원격 코드 실행으로 이어질 수 있는 취약점(PHP2Shell, Java4Shell, NGINX2Root)이 잇따른 것을
+계기로 보안 규칙을 손봤습니다. Prompted by the recent PHP2Shell, Java4Shell, and NGINX2Root vulnerabilities.
+
+### 보안 AI법 신설 · New Security AI Law
+- 13번째 직무 법 `security-ai-law` 를 한국어·영어로 추가했습니다. "보안 검사 해줘"처럼 보안 점검이나 취약점 대응을
+  요청했을 때 적용합니다. 의존성·런타임 버전의 보안 공지와 CISA KEV 대조, 새 취약점의 영향 분석, 수정판과 임시 완화
+  계획, 점검 보고 형식을 정하고, 기억만으로 한 "취약점 없음" 판정, 지어낸 CVE·버전, 근거 없는 스캐너 경고 끄기,
+  허가 없는 스캔, 부작용을 숨긴 임시 완화를 막습니다. Added the Security AI Law for requested security checks and
+  vulnerability response.
+
+### 개발자 AI법 보안 개정 · Developer AI Law security amendment
+- 제18조 제5항·제6항: 오류나 경고를 없애려는 경우를 포함해 보안 장치를 끄거나 약화하는 일(TLS 검증 끄기, 자격 증명을
+  허용하는 CORS의 모든 출처 허용, CSP `unsafe-inline`, 쿠키 속성 제거, `--no-verify` 등)을 금지하고, 피할 수 없는
+  예외는 사전 승인·제27조 기록·개발 환경 한정으로 묶었습니다.
+- 제18조 제7항: 신뢰할 수 없는 입력(요청, 업로드, 외부 응답, 저장된 사용자 데이터, LLM 출력)을 셸·쿼리·`eval`·
+  역직렬화·템플릿·경로·서버 쪽 요청·리다이렉트에 문자열로 이어 붙이지 못하게 하고 안전한 대안을 적었습니다.
+- 제18조의2(의존성 안전) 신설: 패키지를 추가할 때 진짜 패키지인지와 `audit` 결과를 확인하고, 잠금 파일을 지우거나
+  `--force` 같은 강제 옵션을 승인 없이 쓰지 못하게 했습니다. 보안 공지 조회와 취약점 대응은 코드 작업마다 하지 않고
+  보안 AI법으로 넘겼습니다. Added Article 18-2 (Dependency Safety).
+- 제2조 제5항, 제19조 제4항, 제24조(위반 등급), 최종 준법 체크리스트와 description을 함께 고쳤습니다.
+
+### 그 밖 · Other
+- 입법 스킬의 선례 표, README 법전 목록·배지, 플러그인 설명에 보안 AI법을 넣었습니다.
+
 ## 1.5.0 — 2026-11-19
 
 ### Agent Skills 규격과 다른 에이전트 · Agent Skills and other agents

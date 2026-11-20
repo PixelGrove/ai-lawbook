@@ -1,0 +1,4 @@
+interface:
+  display_name: "보안 AI법"
+  short_description: "기억만으로 내린 취약점 판정과 경고 지우기를 조문과 형벌로 막는 보안 점검 원칙"
+  default_prompt: "$security-ai-law 로 보안 AI법에 따라 이 작업을 하라."

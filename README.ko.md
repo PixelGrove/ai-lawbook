@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/PixelGrove/ai-lawbook/stargazers"><img src="https://img.shields.io/github/stars/PixelGrove/ai-lawbook?style=flat-square&color=f2c14e&labelColor=15171e" alt="Stars"></a>
   <a href="https://github.com/PixelGrove/ai-lawbook/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/PixelGrove/ai-lawbook/test.yml?style=flat-square&label=tests&labelColor=15171e" alt="Tests"></a>
-  <img src="https://img.shields.io/badge/법-12개_직무_+_답변_×_한·영-f2c14e?style=flat-square&labelColor=15171e" alt="12개 직무 + 답변 × 한·영">
+  <img src="https://img.shields.io/badge/법-13개_직무_+_답변_×_한·영-f2c14e?style=flat-square&labelColor=15171e" alt="13개 직무 + 답변 × 한·영">
   <img src="https://img.shields.io/badge/Claude_Code-plugin-f2c14e?style=flat-square&labelColor=15171e" alt="Claude Code plugin">
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-compatible-f2c14e?style=flat-square&labelColor=15171e" alt="Agent Skills compatible"></a>
   <a href="#라이선스"><img src="https://img.shields.io/badge/license-MIT_+_Commons_Clause-f2c14e?style=flat-square&labelColor=15171e" alt="MIT + Commons Clause"></a>
@@ -50,7 +50,7 @@ AI가 잘못된 가정을 확인하지 않고 밀고 나가고, `CLAUDE.md` 에 
 | **규칙을 건너뜀** — 긴 지침은 묻히고, 스킬은 AI가 "해당한다"고 볼 때만 불려 옴 | AI가 읽을지 말지를 스스로 정합니다 | 시행 명부에 올린 법은 훅이 첫 토큰 전에 컨텍스트에 직접 넣습니다 |
 | **세션이 바뀌면 같은 실수** — 대화가 끝나면 교훈도 사라짐 | 사람이 매번 다시 적어야 합니다 | 반성문 장부가 모든 세션·프로젝트·하위 에이전트에 따라가고, 재범은 가중처벌, 3회면 AI가 개정안을 씁니다 |
 | **말로는 못 막는 위험한 명령** — 금지해도 `git push --force` 를 또 실행 | 글은 무시될 수 있습니다 | 장부의 `- 차단:` 줄을 guard 훅이 실행 전에 기계적으로 막습니다 |
-| **개발 밖 직무엔 기준이 없음** — 마케팅 카피의 "업계 1위", 없는 기능 약속, 틀린 정답지 | 직무마다 규칙을 처음부터 써야 합니다 | 12개 직무 법이 각 직무에서 AI가 실제로 저지르는 실패를 정조준합니다 |
+| **개발 밖 직무엔 기준이 없음** — 마케팅 카피의 "업계 1위", 없는 기능 약속, 틀린 정답지 | 직무마다 규칙을 처음부터 써야 합니다 | 13개 직무 법이 각 직무에서 AI가 실제로 저지르는 실패를 정조준합니다 |
 | **읽기 힘든 답변** — 영어로 새고, 전보체, 용어 흔들림, 그림 없이 긴 글 | 답변 형식은 매번 말로 고쳐야 합니다 | 답변 AI법이 항공기 정비 매뉴얼의 문체 원칙을 참고한 규칙으로 모든 답변을 통제합니다 |
 
 ## 법 없을 때 vs 법 있을 때
@@ -99,7 +99,7 @@ $ npm test → 128 passed, 0 failed
 
 ## 법전 목록
 
-13개 법이 모두 한국어·영어로 있고, 같은 [표준 골격](plugins/ai-lawbook/skills/ai-lawmaker/references/law-skeleton.md)을 따릅니다.
+14개 법이 모두 한국어·영어로 있고, 같은 [표준 골격](plugins/ai-lawbook/skills/ai-lawmaker/references/law-skeleton.md)을 따릅니다.
 시행 명부에는 가운데 열의 이름을 적습니다.
 
 | 법 | 명부 이름 | AI가 이런 짓을 못 하게 막습니다 |
@@ -116,6 +116,7 @@ $ npm test → 128 passed, 0 failed
 | 🍎 **교육자 AI법** | `educator-ai-law` | 틀린 정답지, 학습 대신 정답만 주기, 학생 개인정보 노출 |
 | 🤝 **인사 AI법** | `hr-ai-law` | 차별적 채용 기준, 금지된 면접 질문, 연차·수당 계산 오류를 확정 안내 |
 | 💼 **영업 AI법** | `sales-ai-law` | 없는 기능 약속, 권한 없는 할인, 가짜 레퍼런스 고객·ROI |
+| 🛡️ **보안 AI법** | `security-ai-law` | 기억만으로 "취약점 없음" 판정, 지어낸 CVE·버전, 근거 없이 스캐너 경고 끄기, 허가 없는 스캔 |
 | 💬 **답변 AI법** | `answer-ai-law` | 모든 답변에서 영어로 새기, 전보체, 용어 흔들림, 그림 대신 긴 글 |
 
 여기에 입법부 **`ai-lawmaker`** 가 있습니다. AI가 자꾸 틀리는 걸 말해 주면 우리 팀만의 법을
@@ -145,6 +146,26 @@ LLM에게 이 문체로 설명하게 하니 종종 훨씬 읽기 쉬웠다고 �
 
 > ASD-STE100은 ASD의 등록 상표입니다. 답변 AI법은 그 원칙을 참고해 새로 쓴 한국어 규칙이며, STE를 준수하거나
 > 인증받은 것이 아니고 ASD·STEMG와도 관계가 없습니다. 카파시 본인이 만들거나 보증한 것도 아닙니다.
+
+## 보안 검사도 한 문장으로
+
+**보안 AI법**은 "보안 검사 해줘"처럼 점검을 요청했을 때만 돕니다. 코드를 고칠 때마다 보안 공지를 뒤지지 않습니다.
+
+1. **스택 읽기** — 잠금 파일, 매니페스트, Dockerfile에서 런타임, 웹 서버, 프레임워크, 라이브러리 버전과 그 위치를
+   읽습니다. 컨테이너 이미지는 태그만 믿지 않고 로컬에서 연 패키지 목록과 `--version` 으로 확인합니다.
+2. **공지와 대조** — 공급사·배포판 보안 공지를 먼저 보고, NVD·OSV·GHSA를 보조로, CISA KEV 같은 악용 목록까지
+   대조합니다. `npm audit` 이나 이미지 스캐너를 돌릴 수 있으면 돌리고 명령과 결과를 남깁니다. 밖으로 보내는
+   검색어에는 제품 이름과 버전만 넣습니다.
+3. **보고** — 고칠 순서대로 요약한 뒤 취약점마다 구성요소, 버전과 근거 위치, CVE, 심각도, KEV 등재, 수정판,
+   운영 노출 여부, 출처와 확인 날짜를 적습니다. 확인하지 못한 항목은 "확인 불가"로 따로 모읍니다.
+
+할 수 없는 것도 그대로 적습니다.
+
+- 웹 검색이 안 되는 환경에서는 "취약점 없음" 대신 "확인 불가"로 적습니다.
+- 운영 서버에 접속하거나 스캔해서 버전을 알아내지 않습니다. 운영 버전은 `nginx -V` 같은 출력을 받아 저장소
+  버전과 따로 적습니다.
+- 별도 스캐너 프로그램이 아니라 AI가 따르는 법입니다. 점검 깊이는 설치된 도구(`npm audit`, `pip-audit`,
+  `trivy` 등)와 에이전트의 웹 검색 기능에 따라 달라집니다.
 
 ## 설치
 

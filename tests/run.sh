@@ -96,9 +96,9 @@ rm -rf "$TMP/home/.claude/skills"
 mv "$BOOK/enabled-laws" "$BOOK/enabled-laws.bak"
 printf '\357\273\277developer-ai-law\r\nDesigner-AI-Law\nwriter-ai-law, translator-ai-law\n' > "$BOOK/enabled-laws"
 check "roster: BOM, CRLF, uppercase and comma-separated names are read" 'msg | grep -q "시행 중 4개, 반성문 0건 (developer-ai-law designer-ai-law writer-ai-law translator-ai-law)"'
-# A line longer than 128 bytes is split first: all 14 laws on one comma-separated line must be read.
+# A line longer than 128 bytes is split first: all 15 laws on one comma-separated line must be read.
 ls "$KO/skills" | paste -sd, - | sed 's/,/, /g' > "$BOOK/enabled-laws"
-check "roster: 14 laws on one comma-separated line (>128 bytes) are all read" 'msg | grep -q "시행 중 14개"'
+check "roster: 15 laws on one comma-separated line (>128 bytes) are all read" 'msg | grep -q "시행 중 15개"'
 { i=0; while [ "$i" -lt 300 ]; do printf a; i=$((i + 1)); done; printf ', developer-ai-law\n'; } > "$BOOK/enabled-laws"
 check "roster: an over-long name is reported as … and the next name still counts" 'msg | grep -q "시행 중 1개" && msg | grep -q "…: 법 이름 형식"'
 i=0; while [ "$i" -lt 5000 ]; do echo Developer-AI-Law; i=$((i + 1)); done > "$BOOK/enabled-laws"
@@ -221,7 +221,7 @@ check "budget: english SessionStart <= 9000 chars" '[ "$(printf "%s" "$(hook_en 
 check "budget: ledger summary <= 3500 chars" '[ "$(ctx | awk "/^<반성문_장부>/,/^<\/반성문_장부>/" | nchars)" -le 3501 ]'
 check "budget: ledger titles present" 'ctx | grep -q "예산 항목 11번"'
 check "budget: condensed laws are marked with their full-text path" 'ctx | grep -q "^# 개발자 AI법 (축약)$" && ctx | grep -qF "전문: $KO/skills/developer-ai-law/SKILL.md"'
-check "budget: subagent carries the condensed mark too" '[ "$(subctx | grep -c "^# .* (축약)$")" = 14 ] && [ "$(subctx | grep -cF "전문: $KO/skills/")" = 14 ]'
+check "budget: subagent carries the condensed mark too" '[ "$(subctx | grep -c "^# .* (축약)$")" = 15 ] && [ "$(subctx | grep -cF "전문: $KO/skills/")" = 15 ]'
 check "budget: english condensed mark" 'hook_en | jq -r .hookSpecificOutput.additionalContext | grep -q "^# .* (condensed)$"'
 check "budget: most repeated entry comes first" '[ "$(ctx | lineof "예산 항목 11번")" -lt "$(ctx | lineof "예산 항목 9번")" ]'
 check "budget: omitted entries are counted" 'ctx | grep -q "^… 외 [0-9][0-9]*건$"'
@@ -387,7 +387,7 @@ done
 echo "laws"
 ko_names="$(cd "$KO/skills" && ls -d */ 2>/dev/null | tr -d / | sort)"
 en_names="$(cd "$EN/skills" && ls -d */ 2>/dev/null | tr -d / | sort)"
-check "14 skills in the Korean plugin" '[ "$(printf "%s\n" "$ko_names" | grep -c .)" = 14 ]'
+check "15 skills in the Korean plugin" '[ "$(printf "%s\n" "$ko_names" | grep -c .)" = 15 ]'
 check "ko and en ship the same skills" '[ "$ko_names" = "$en_names" ]'
 
 for name in $ko_names; do

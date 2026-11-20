@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/PixelGrove/ai-lawbook/stargazers"><img src="https://img.shields.io/github/stars/PixelGrove/ai-lawbook?style=flat-square&color=f2c14e&labelColor=15171e" alt="Stars"></a>
   <a href="https://github.com/PixelGrove/ai-lawbook/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/PixelGrove/ai-lawbook/test.yml?style=flat-square&label=tests&labelColor=15171e" alt="Tests"></a>
-  <img src="https://img.shields.io/badge/laws-12_roles_+_answers_×_2_languages-f2c14e?style=flat-square&labelColor=15171e" alt="12 roles + answers × 2 languages">
+  <img src="https://img.shields.io/badge/laws-13_roles_+_answers_×_2_languages-f2c14e?style=flat-square&labelColor=15171e" alt="13 roles + answers × 2 languages">
   <img src="https://img.shields.io/badge/Claude_Code-plugin-f2c14e?style=flat-square&labelColor=15171e" alt="Claude Code plugin">
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-compatible-f2c14e?style=flat-square&labelColor=15171e" alt="Agent Skills compatible"></a>
   <a href="#license"><img src="https://img.shields.io/badge/license-MIT_+_Commons_Clause-f2c14e?style=flat-square&labelColor=15171e" alt="MIT + Commons Clause"></a>
@@ -50,7 +50,7 @@ instructions in `CLAUDE.md` ([post](https://x.com/karpathy/status/20158838574895
 | **Rules get skipped** — long guides get buried, and skills load only when the agent decides they apply | The agent decides whether to read them | Laws in the enforcement roster are put into context by a hook before the first token |
 | **Same mistake, next session** — the lesson dies with the conversation | You write it down again, every time | The Confession Ledger follows the agent into every session, project, and subagent; repeats are aggravated, and three strikes produce an amendment |
 | **Dangerous commands words can't stop** — `git push --force` again, after being told not to | Text can be ignored | A ledger `- Block:` line makes the guard hook deny the command before it runs |
-| **No standard outside coding** — "No.1" marketing claims, promised features that don't exist, wrong answer keys | You write each role's rules from scratch | Twelve role laws aim at the failures AI actually commits in each role |
+| **No standard outside coding** — "No.1" marketing claims, promised features that don't exist, wrong answer keys | You write each role's rules from scratch | Thirteen role laws aim at the failures AI actually commits in each role |
 | **Hard-to-read answers** — drifting language, telegraphese, term drift, walls of text | You correct the format by hand, every time | The Answer AI Law governs every reply with rules inspired by the writing principles of aircraft maintenance manuals (ASD-STE100) |
 
 ## Before / after
@@ -99,7 +99,7 @@ Next session, in a different project, before the agent does anything:
 
 ## The Lawbook
 
-Thirteen laws, each in Korean and English, each built on the same [standard skeleton](plugins/ai-lawbook-en/skills/ai-lawmaker/references/law-skeleton.md).
+Fourteen laws, each in Korean and English, each built on the same [standard skeleton](plugins/ai-lawbook-en/skills/ai-lawmaker/references/law-skeleton.md).
 Use the middle column in the enforcement roster.
 
 | Law | Roster name | Stops the AI from… |
@@ -116,6 +116,7 @@ Use the middle column in the enforcement roster.
 | 🍎 **Educator** | `educator-ai-law` | wrong answer keys, handing students answers instead of scaffolding, leaking student data |
 | 🤝 **HR** | `hr-ai-law` | discriminatory criteria, illegal interview questions, miscalculated leave or overtime presented as settled law |
 | 💼 **Sales** | `sales-ai-law` | overpromising features, unauthorized discounts, fabricated reference customers and ROI |
+| 🛡️ **Security** | `security-ai-law` | "no known vulnerabilities" from memory, invented CVEs and versions, silencing scanner findings without grounds, unauthorized scans |
 | 💬 **Answer** | `answer-ai-law` | every reply: drifting into another language, telegraphese, term drift, long prose where a diagram belongs |
 
 Plus **`ai-lawmaker`** — the legislature. Tell it what your AI keeps getting wrong, and it enacts a new law
@@ -148,6 +149,29 @@ You set the format:
 > ASD-STE100 is a registered trademark of ASD. The Answer AI Law is a set of rules inspired by its principles,
 > not STE compliance or certification, and has no relationship with ASD or STEMG. Karpathy did not write or
 > endorse it either.
+
+## Security checks in one sentence
+
+The **Security AI Law** runs only when you ask, for example "run a security check". It does not dig through advisories
+every time code changes.
+
+1. **Read the stack** — reads runtime, web server, framework, and library versions, and where each came from, from lock
+   files, manifests, and the Dockerfile. Container images are checked from the package list and `--version` of the image
+   opened locally, not from the tag alone.
+2. **Compare with advisories** — checks vendor and distribution advisories first, NVD, OSV, and GHSA as secondary
+   sources, and exploited-vulnerability lists such as CISA KEV. If `npm audit` or an image scanner can run, it runs them
+   and records the command and result. Outgoing searches contain only product names and versions.
+3. **Report** — opens with fixes in priority order, then lists for each vulnerability the component, version and where
+   it was read, CVE, severity, KEV listing, fixed release, production exposure, and the source and date checked. Anything
+   it could not confirm is collected separately as "could not verify".
+
+It states its limits too.
+
+- Without web access it writes "could not verify" instead of "no vulnerabilities".
+- It never connects to or scans production servers to learn versions. It asks for output such as `nginx -V` and keeps
+  that apart from the repository version.
+- It is a law the agent follows, not a separate scanner. How deep it goes depends on the installed tools (`npm audit`,
+  `pip-audit`, `trivy`, and so on) and on the agent's web access.
 
 ## Install
 

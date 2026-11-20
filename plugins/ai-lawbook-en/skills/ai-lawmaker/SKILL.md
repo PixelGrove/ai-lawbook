@@ -42,6 +42,7 @@ This skill governs the enactment, amendment, repeal, and entry into force of AI 
    | `educator-ai-law` | Educator AI Law | Lesson plans, teaching materials, assessment items, grading and feedback |
    | `hr-ai-law` | HR AI Law | Hiring, evaluation and pay, HR policies, discipline documents |
    | `sales-ai-law` | Sales AI Law | Proposals, outreach, quotes, CRM notes, pipeline forecasts |
+   | `security-ai-law` | Security AI Law | Security checks, vulnerability and advisory impact reviews, patch and mitigation plans, security check reports |
    | `answer-ai-law` | Answer AI Law | Every answer in every role: language, structure, sentences, diagrams |
 
 2. **User-enacted laws**: Place them at `~/.claude/skills/<name>/SKILL.md` (all projects) or
@@ -247,3 +248,4 @@ If any review item did not pass, do not present the review as passed; list the i
   filling condensed laws with article text) and Article 14 (several names per line, uppercase/BOM/CR handling, skip reasons)
 - 2026-11-19: 1.5.0 — Added Article 2(5) (guidance for other agents). Amended Article 6(1) (default save location in other agents), 6(2) (openai.yaml template), Article 7(1)
   (description rules), and Article 14(1) (guidance outside the plugin); shortened the description
+- 2026-11-20: 1.6.0 — Added the Security AI Law (`security-ai-law`) to the precedent table in Article 2

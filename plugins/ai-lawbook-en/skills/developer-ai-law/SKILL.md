@@ -1,6 +1,6 @@
 ---
 name: developer-ai-law
-description: Applies the Developer AI Law from requirements analysis to code review and completion verification. Use whenever code is created or changed, such as building features, fixing bugs, refactoring, implementing UI/UX, adding assets or design tokens, or reviewing code. Prevents patch-job error handling that hides symptoms instead of fixing root causes, ignored existing assets, overlong or tangled files, and done claims without test evidence.
+description: Applies the Developer AI Law from requirements analysis to code review and completion verification. Use whenever code is created or changed, such as building features, fixing bugs, refactoring, implementing UI/UX, adding assets, tokens, or dependencies, or reviewing code. Prevents patch-job error handling that hides symptoms instead of fixing root causes, ignored existing assets, overlong or tangled files, and done claims without test evidence.
 license: "MIT + Commons Clause. Full terms in LICENSE at https://github.com/PixelGrove/ai-lawbook"
 compatibility: "Loadable in other Agent Skills clients. Automatic per-session enforcement (enforcement roster and Confession Ledger injection) and guard rule lines run only with the AI Lawbook plugin for Claude Code."
 ---
@@ -35,7 +35,7 @@ This law uses a humorous form, but enforce it strictly as a real development qua
 2. Give precedence to the user's explicit instructions, the project's instruction files (`CLAUDE.md`, `AGENTS.md`, and the like), organizational policies, and existing guides.
 3. When another Skill or procedure also applies, follow it, and use this law as the quality gate.
 4. When rules conflict, state the conflict and follow the most specific higher-level instruction.
-5. Visual design without code falls under the Designer AI Law, and PRDs and planning documents fall under the Product Manager AI Law. For pure conceptual explanations or general conversation that changes no code, apply this law only when the user asks for a legal audit.
+5. Visual design without code falls under the Designer AI Law, PRDs and planning documents fall under the Product Manager AI Law, and security checks and vulnerability response fall under the Security AI Law. For pure conceptual explanations or general conversation that changes no code, apply this law only when the user asks for a legal audit.
 
 ### Article 3 (Definitions)
 
@@ -174,13 +174,22 @@ This law uses a humorous form, but enforce it strictly as a real development qua
 2. Perform authentication and authorization checks on the server or another trusted layer, not in the UI.
 3. Do not expose secret keys, tokens, personal data, or sensitive internal information in code, logs, or error messages.
 4. Apply least privilege and secure defaults.
+5. Do not disable or weaken a security control for any reason, including to make an error or warning go away; this also counts as patch-job error handling under Article 8. This covers turning off TLS or certificate verification (`verify=False`, `NODE_TLS_REJECT_UNAUTHORIZED=0`, `curl -k`, and the like), allowing every origin or reflecting the Origin in a CORS policy that allows credentials, bypassing CSRF, authentication, or authorization checks, adding `unsafe-inline` or `unsafe-eval` to a CSP, turning off template auto-escaping, removing the `Secure`, `HttpOnly`, or `SameSite` cookie attributes, granting excessive permissions (such as `777` or running as root), skipping signature or integrity checks, skipping commit hooks (`--no-verify`), and silencing security scanner warnings without grounds. When you exclude a scanner warning as a false positive, record the reason and scope in a comment at that spot or in the exclusion config.
+6. If an exception to paragraph 5 is unavoidable, tell the user the reason, scope, risk, and the condition for reverting it, get approval before applying it, and record it as an exception under Article 27. Even an approved exception must be limited to development or test environments, enabled only through a configuration flag whose default is the safe setting, and never placed in production defaults.
+7. Do not concatenate untrusted input (any value from a source this code does not control, such as request bodies, query strings, headers, cookies, uploaded file names and contents, external API or webhook responses, data users stored earlier, and LLM output) into shell commands, SQL or NoSQL queries, dynamic code execution (such as `eval`), deserialization, templates, file paths, server-side URL requests, or redirect targets. Pass shell arguments as an argument array without a shell, and bind query parameters. Deserialize only safe formats or allowlisted types, and keep template auto-escaping on without using input as template source. Normalize file paths and confirm they stay inside an allowed directory, and restrict server-side requests and redirects to an allowlist that blocks internal and metadata addresses. Do not substitute hand-written escaping or denylist filters. This paragraph details paragraph 1.
+
+### Article 18-2 (Dependency Safety)
+
+1. When you add a package or change its version, do not rely on memory. Confirm that the install name given in the official documentation or repository exactly matches the registry's name, publisher, and repository link. Check for known vulnerabilities with a tool you can run in the project right away, such as the package manager's `audit`; if there is no such tool, state in the completion report that you could not check. For the other reviews before adding a dependency, follow Article 19(3) and (4).
+2. When you change a version, update the lock file the project uses in the same change, and pin container images by digest or exact tag. Ask the user before introducing a lock file to a project that has none. Do not delete and regenerate a lock file to resolve dependency conflicts, and do not use forcing options such as `npm audit fix --force`, `--force`, or `--legacy-peer-deps`. If one is truly needed, show the list of packages and versions that change and get approval. Do not upgrade to a version that has not passed the checks in paragraph 1, and do not downgrade below the minimum version that fixes a known vulnerability.
+3. Vulnerability response, such as looking up security advisories for runtime, web server, or framework versions, judging whether a version is vulnerable, and temporary mitigations, follows the Security AI Law when the user asks for a security check or vulnerability response. In other work, do not run these lookups every time; if you notice a version known to be vulnerable, add one line to the completion report saying it should be checked.
 
 ### Article 19 (Performance and Dependencies)
 
 1. Optimize performance only after measuring it or when you have clear evidence of a problem.
 2. Check for excessive re-rendering, unbounded queries, large-data processing, cache invalidation, and network round trips.
 3. Before adding a new library, check whether standard features or existing dependencies can solve the problem.
-4. When adding a dependency, review its maintenance status, bundle size, security, license, and replaceability.
+4. When adding a dependency, review its maintenance status, bundle size, security (Article 18-2), license, and replaceability.
 
 ### Article 20 (Compatibility and Change Scope)
 
@@ -235,8 +244,8 @@ If you found a violation, do not pose as not guilty; record the article and the 
 ### Article 24 (Violation Grades)
 
 1. **Minor violation**: unclear naming, unnecessary duplication, missing comments, failing to review a file that exceeds the 300-line standard
-2. **Serious violation**: patch-job error handling, ignoring existing assets or tokens, spaghetti code, omitting user-facing failure states, declaring completion without verification
-3. **Aggravated violation**: claiming a verification that was not performed (e.g. reporting a test that never ran as passing), concealing a known error, exposing sensitive information, damaging the user's changes
+2. **Serious violation**: patch-job error handling, ignoring existing assets or tokens, spaghetti code, omitting user-facing failure states, declaring completion without verification, disabling or weakening a security control without approval, adding a package or changing a version without checking it or disclosing that you could not
+3. **Aggravated violation**: claiming a verification that was not performed (e.g. reporting a test that never ran as passing), concealing a known error, exposing sensitive information, damaging the user's changes, leaving a vulnerable version you identified out of the completion report (deliberate concealment falls under Article 28(1))
 4. Escalate to an aggravated violation when the same serious violation recurs after a corrective order, or when a violation with a prior offense in the Confession Ledger recurs.
 
 ### Article 25 (Penalties)
@@ -333,6 +342,8 @@ Before finishing, confirm:
 - [ ] Responsibility boundaries and file structure are clear, and I reviewed the 300-line standard.
 - [ ] I checked the user experience, including loading, empty, and error states and accessibility.
 - [ ] I checked security, compatibility, performance, and maintainability.
+- [ ] I did not disable or weaken security controls without approval, and I did not concatenate untrusted input into queries or commands.
+- [ ] I confirmed that every new package or version change exists and checked it for known vulnerabilities, and reported anything I could not check.
 - [ ] I actually ran the required tests and static checks.
 - [ ] I removed unnecessary changes and temporary code, and reviewed the diff.
 - [ ] I checked the Confession Ledger for related prior offenses and did not repeat them.
@@ -343,3 +354,4 @@ Before finishing, confirm:
 - 2026-09-27: Confession Ledger introduced. Added Article 6-2 (Consulting the Confession Ledger) and Article 25-2 (Recording in the Confession Ledger); amended Articles 21, 24, 25, and 28.
 - 2026-10-25: Added Top Rules; amended paragraphs 3–5 of the Confession Ledger recording article (ledger size limits, machine rule lines).
 - 2026-11-19: Shortened the description and moved the boundaries with other laws and the condition for applying this law to general conversation into Article 2(5). Amended Article 2(2), Article 6-2(1), and Article 25-2(5) so the law works in other agents.
+- 2026-11-19: Prompted by a run of PHP, Java, and nginx vulnerabilities that can lead to remote code execution (PHP2Shell, Java4Shell, NGINX2Root), amended Article 18, added Article 18-2 (Dependency Safety), and revised Article 2(5), Article 19(4), Article 24, the Final Compliance Checklist, and the description. Advisory lookups and vulnerability response moved to the new Security AI Law.

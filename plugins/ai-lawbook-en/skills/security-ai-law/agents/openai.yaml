@@ -1,0 +1,4 @@
+interface:
+  display_name: "Security AI Law"
+  short_description: "Blocks memory-only vulnerability verdicts and warning wiping"
+  default_prompt: "Use $security-ai-law to do this task under the Security AI Law."

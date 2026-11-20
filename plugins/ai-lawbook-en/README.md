@@ -1,8 +1,8 @@
 # AI Lawbook (English edition)
 
 A Claude Code plugin that enforces role-specific quality standards on AI agents in the form of law.
-It ships AI Laws for twelve roles (developer, designer, product manager, marketer, writer, translator,
-data analyst, researcher, customer support, educator, HR, and sales), the Answer AI Law for the language,
+It ships AI Laws for thirteen roles (developer, designer, product manager, marketer, writer, translator,
+data analyst, researcher, customer support, educator, HR, sales, and security), the Answer AI Law for the language,
 structure, and sentences of every answer, and `ai-lawmaker`, a skill that enacts and amends laws for your
 own team.
 
