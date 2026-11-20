@@ -1,6 +1,6 @@
 {
   "name": "ai-lawbook-en",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "AI Lawbook — 13 role-based AI Laws (developer, designer, PM, marketer, writer, translator, data analyst, researcher, support, educator, HR, sales, security) plus the Answer AI Law, a lawmaker skill, a Confession Ledger that follows your agent across sessions, and a guard hook that enforces its rules.",
   "author": { "name": "Pixel._.Grove", "url": "https://github.com/PixelGrove" },
   "homepage": "https://github.com/PixelGrove/ai-lawbook",

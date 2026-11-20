@@ -116,7 +116,7 @@ Use the middle column in the enforcement roster.
 | 🍎 **Educator** | `educator-ai-law` | wrong answer keys, handing students answers instead of scaffolding, leaking student data |
 | 🤝 **HR** | `hr-ai-law` | discriminatory criteria, illegal interview questions, miscalculated leave or overtime presented as settled law |
 | 💼 **Sales** | `sales-ai-law` | overpromising features, unauthorized discounts, fabricated reference customers and ROI |
-| 🛡️ **Security** | `security-ai-law` | "no known vulnerabilities" from memory, invented CVEs and versions, silencing scanner findings without grounds, unauthorized scans |
+| 🛡️ **Security** | `security-ai-law` | "no known vulnerabilities" from memory, invented CVEs and versions, silencing scanner findings without grounds, unauthorized scans, skipped MCP server and config checks |
 | 💬 **Answer** | `answer-ai-law` | every reply: drifting into another language, telegraphese, term drift, long prose where a diagram belongs |
 
 Plus **`ai-lawmaker`** — the legislature. Tell it what your AI keeps getting wrong, and it enacts a new law
@@ -164,6 +164,13 @@ every time code changes.
 3. **Report** — opens with fixes in priority order, then lists for each vulnerability the component, version and where
    it was read, CVE, severity, KEV listing, fixed release, production exposure, and the source and date checked. Anything
    it could not confirm is collected separately as "could not verify".
+
+When the project has MCP server code or MCP client configuration (`.mcp.json`, `claude_desktop_config.json`,
+`.cursor/mcp.json`, Codex `config.toml`), it gives a determination for each of the ten risks (MCP01–MCP10) in the
+[OWASP MCP Top 10](https://github.com/OWASP/www-project-mcp-top-10) v0.1: plaintext tokens, servers launched unpinned
+with `npx -y`, tool descriptions with hidden instructions, servers missing from your approved list, and so on. While
+checking, it reads instructions inside tool descriptions and outputs as data and never follows them. The articles are
+new text that follows the OWASP MCP Top 10 (CC BY-SA 4.0) categories; the AI Lawbook is not affiliated with OWASP.
 
 It states its limits too.
 
